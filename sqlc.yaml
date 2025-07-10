@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    queries:
+      - "internal/database/queries/sessions.sql"
+    schema: "internal/database/schema.sql"
+    gen:
+      go:
+        package: "store"
+        out: "internal/database/store"
