@@ -59,3 +59,8 @@ watch:
         fi
 
 .PHONY: all build run test clean watch tailwind-install templ-install
+
+# Migrate up
+migrate:
+	goose up
+	sqlite3 ./store.db .schema > internal/database/schema.sql

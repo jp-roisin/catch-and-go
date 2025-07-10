@@ -39,3 +39,5 @@ bruno
 cmd/web/assets/css/output.css
 tailwindcss
 
+# Sqlite DB
+store.db
