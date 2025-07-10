@@ -32,6 +32,8 @@ main
 # OS X generated file
 .DS_Store
 
+# Bruno http client
+bruno
 
 # Tailwind CSS
 cmd/web/assets/css/output.css
