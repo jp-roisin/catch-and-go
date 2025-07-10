@@ -10,6 +10,7 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/jp-roisin/catch-and-go/internal/database/store"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -25,7 +26,8 @@ type Service interface {
 }
 
 type service struct {
-	db *sql.DB
+	db      *sql.DB
+	queries *store.Queries
 }
 
 var (
@@ -47,7 +49,8 @@ func New() Service {
 	}
 
 	dbInstance = &service{
-		db: db,
+		db:      db,
+		queries: store.New(db),
 	}
 	return dbInstance
 }
