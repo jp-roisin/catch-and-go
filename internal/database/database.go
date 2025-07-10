@@ -23,6 +23,8 @@ type Service interface {
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close() error
+	GetSession(ctx context.Context, token string) (store.Session, error)
+	CreateSession(ctx context.Context, token string) (store.Session, error)
 }
 
 type service struct {
@@ -113,4 +115,12 @@ func (s *service) Health() map[string]string {
 func (s *service) Close() error {
 	log.Printf("Disconnected from database: %s", dburl)
 	return s.db.Close()
+}
+
+func (s *service) GetSession(ctx context.Context, token string) (store.Session, error) {
+	return s.queries.GetSession(ctx, token)
+}
+
+func (s *service) CreateSession(ctx context.Context, token string) (store.Session, error) {
+	return s.queries.CreateSession(ctx, token)
 }
