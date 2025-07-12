@@ -21,7 +21,11 @@ func main() {
 	ctx := context.Background()
 
 	if err := seeds.SeedStops(ctx, db); err != nil {
-		log.Fatalf("❌ Seeding failed: %v", err)
+		log.Fatalf("❌ Stops seeding failed:\n %v", err)
+	}
+
+	if err := seeds.SeeddLines(ctx, db); err != nil {
+		log.Fatalf("❌ Lines seeding failed:\n %v", err)
 	}
 
 	log.Println("✅ Seeding complete")
