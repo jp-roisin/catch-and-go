@@ -64,3 +64,10 @@ watch:
 migrate:
 	goose up
 	sqlite3 ./store.db .schema > internal/database/schema.sql
+
+# Populate the db with static (non real time) data from the stib/mivb API
+seed:
+	@rm store.db
+	goose up
+	sqlite3 ./store.db .schema > internal/database/schema.sql
+	@go run ./cmd/seeds
