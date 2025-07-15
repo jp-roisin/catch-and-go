@@ -41,3 +41,6 @@ tailwindcss
 
 # Sqlite DB
 store.db
+
+# Seed csv data
+internal/database/seeds/data
