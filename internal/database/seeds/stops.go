@@ -14,7 +14,7 @@ type Location struct {
 	Longitude float64 `json:"longitude"`
 }
 
-func IoSeedStops(ctx context.Context, db *sql.DB) error {
+func SeedStops(ctx context.Context, db *sql.DB) error {
 	stopsResult, err := readCsvFile(stopDetailsFilePath)
 	if err != nil {
 		return err

@@ -21,12 +21,12 @@ func main() {
 
 	ctx := context.Background()
 
-	if err := seeds.IoSeedStops(ctx, db); err != nil {
+	if err := seeds.SeedStops(ctx, db); err != nil {
 		log.Fatalf("❌ Stops seeding failed:\n %v", err)
 	}
 	log.Println("✅ Stops seeding successful")
 
-	if err := seeds.IoSeedLines(ctx, db); err != nil {
+	if err := seeds.SeedLines(ctx, db); err != nil {
 		log.Fatalf("❌ Lines seeding failed:\n %v", err)
 	}
 	log.Println("✅ Lines seeding successful")

@@ -9,7 +9,7 @@ import (
 
 const stopsByLineFilePath = "internal/database/seeds/data/stops-by-line-production.csv"
 
-func IoSeedLines(ctx context.Context, db *sql.DB) error {
+func SeedLines(ctx context.Context, db *sql.DB) error {
 	linesResult, err := readCsvFile(stopsByLineFilePath)
 	if err != nil {
 		return err
