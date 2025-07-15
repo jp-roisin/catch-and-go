@@ -8,6 +8,7 @@ import (
 
 	"github.com/jp-roisin/catch-and-go/internal/database/seeds"
 	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
@@ -23,10 +24,12 @@ func main() {
 	if err := seeds.SeedStops(ctx, db); err != nil {
 		log.Fatalf("❌ Stops seeding failed:\n %v", err)
 	}
+	log.Println("✅ Stops seeding successful")
 
-	if err := seeds.SeeddLines(ctx, db); err != nil {
+	if err := seeds.SeedLines(ctx, db); err != nil {
 		log.Fatalf("❌ Lines seeding failed:\n %v", err)
 	}
+	log.Println("✅ Lines seeding successful")
 
 	log.Println("✅ Seeding complete")
 }
