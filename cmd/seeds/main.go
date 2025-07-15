@@ -8,6 +8,7 @@ import (
 
 	"github.com/jp-roisin/catch-and-go/internal/database/seeds"
 	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
