@@ -7,15 +7,10 @@ import (
 	"fmt"
 )
 
-const stopDetailsFilePath = "internal/database/seeds/data/stop-details-production.csv"
+const stopsByLineFilePath = "internal/database/seeds/data/stops-by-line-production.csv"
 
-type Location struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
-}
-
-func IoSeedStops(ctx context.Context, db *sql.DB) error {
-	stopsResult, err := readCsvFile(stopDetailsFilePath)
+func IoSeedLines(ctx context.Context, db *sql.DB) error {
+	linesResult, err := readCsvFile(stopsByLineFilePath)
 	if err != nil {
 		return err
 	}
@@ -26,9 +21,9 @@ func IoSeedStops(ctx context.Context, db *sql.DB) error {
 	}
 
 	stmt, err := tx.PrepareContext(ctx, `
-			INSERT INTO stops (code, geo, name)
+			INSERT INTO lines (code, destination, direction)
 			VALUES (?, ?, ?)
-		`)
+	`)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -37,33 +32,37 @@ func IoSeedStops(ctx context.Context, db *sql.DB) error {
 
 	count := 0
 
-	for i, row := range stopsResult {
+	for i, row := range linesResult {
 		if i == 0 {
 			continue // skip csv header
 		}
-
-		if len(row) != 3 {
+		if len(row) != 4 {
 			return fmt.Errorf("row %d has incorrect number of columns: %v", i+1, row)
 		}
-		location := row[0]
-		code := row[1]
-		name := row[2]
 
-		var l Location
-		if err := json.Unmarshal([]byte(location), &l); err != nil {
-			return fmt.Errorf("invalid JSON in 'location' at row %d: %v", i+1, err)
+		destination := row[0]
+		direction := row[1]
+		code := row[2]
+
+		var d i18nCell
+		if err := json.Unmarshal([]byte(destination), &d); err != nil {
+			return fmt.Errorf("invalid JSON in 'destination' at row %d: %v", i+1, err)
+		}
+
+		if !validString.MatchString(direction) {
+			return fmt.Errorf("invalid stop ID at row %d: %q (must be alphanumeric)", i+1, direction)
 		}
 
 		if !validString.MatchString(code) {
 			return fmt.Errorf("invalid stop ID at row %d: %q (must be alphanumeric)", i+1, code)
 		}
 
-		var n i18nCell
-		if err := json.Unmarshal([]byte(name), &n); err != nil {
-			return fmt.Errorf("invalid JSON in 'name' at row %d: %v", i+1, err)
+		// Casting the direction ("City" || "Suburb") into a boolean
+		booleanDirection := 1
+		if direction == "Suburb" {
+			booleanDirection = 0
 		}
-
-		_, err = stmt.ExecContext(ctx, code, location, name)
+		_, err = stmt.ExecContext(ctx, code, destination, booleanDirection)
 		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to insert row %d: %v", i+1, err)
@@ -75,14 +74,14 @@ func IoSeedStops(ctx context.Context, db *sql.DB) error {
 			if err := tx.Commit(); err != nil {
 				return err
 			}
-			fmt.Printf("'Stops' batch complete: #%d \n", count/batchSize)
+			fmt.Printf("'Lines' batch complete: #%d \n", count/batchSize)
 
 			tx, err = db.BeginTx(ctx, nil)
 			if err != nil {
 				return err
 			}
 
-			stmt, err = tx.PrepareContext(ctx, `INSERT INTO stops (code, geo, name) VALUES (?, ?, ?)`)
+			stmt, err = tx.PrepareContext(ctx, `INSERT INTO lines (code, destination, direction) VALUES (?, ?, ?)`)
 			if err != nil {
 				tx.Rollback()
 				return err
