@@ -5,119 +5,99 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"os"
-	"time"
-
-	_ "github.com/joho/godotenv/autoload"
 )
 
-type stopsApiResponse struct {
-	TotalCount int    `json:"total_count"`
-	Results    []stop `json:"results"`
+const stopDetailsFilePath = "internal/database/seeds/data/stop-details-production.csv"
+
+type Location struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
 
-type stop struct {
-	GPSCoordinates string `json:"gpscoordinates"`
-	ID             string `json:"id"`
-	Name           string `json:"name"`
-}
-
-var stopQuery = struct {
-	baseURL string
-	batch   int
-}{
-	baseURL: "https://data.stib-mivb.brussels/api/explore/v2.1/catalog/datasets/stop-details-production/records",
-	batch:   100,
-}
-
-var apiKey = os.Getenv("STIB_API_KEY")
-
-// SeedStops fetches all stops from the external API and stores them in the DB in batches.
 func SeedStops(ctx context.Context, db *sql.DB) error {
-	offset := 0
-	totalCount := -1
+	stopsResult, err := readCsvFile(stopDetailsFilePath)
+	if err != nil {
+		return err
+	}
 
-	// db.ExecContext(ctx, "DELETE FROM stops;")
-	// db.ExecContext(ctx, "DELETE FROM sqlite_sequence WHERE name = 'stops';")
-	// log.Println("✅ Done clearing stops")
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
 
-	for {
-		url := fmt.Sprintf("%s?limit=%d&offset=%d", stopQuery.baseURL, stopQuery.batch, offset)
-
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-		if err != nil {
-			return fmt.Errorf("failed to create request: %w", err)
-		}
-
-		req.Header.Set("Authorization", apiKey)
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-
-		if err != nil {
-			return fmt.Errorf("failed to fetch stops: %w", err)
-		}
-
-		defer resp.Body.Close()
-
-		if resp.StatusCode >= 400 {
-			return fmt.Errorf("💥HTTP 'stop-details' request failed with status code %d", resp.StatusCode)
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("failed to read response: %w", err)
-		}
-
-		var data stopsApiResponse
-		if err := json.Unmarshal(body, &data); err != nil {
-			return fmt.Errorf("failed to parse JSON: %w", err)
-		}
-
-		if totalCount == -1 {
-			totalCount = data.TotalCount
-		}
-
-		tx, err := db.BeginTx(ctx, nil)
-		if err != nil {
-			return fmt.Errorf("failed to begin transaction: %w", err)
-		}
-
-		stmt, err := tx.PrepareContext(ctx, `
+	stmt, err := tx.PrepareContext(ctx, `
 			INSERT INTO stops (code, geo, name)
 			VALUES (?, ?, ?)
 		`)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer stmt.Close()
+
+	count := 0
+
+	for i, row := range stopsResult {
+		if i == 0 {
+			continue // skip csv header
+		}
+
+		if len(row) != 3 {
+			return fmt.Errorf("row %d has incorrect number of columns: %v", i+1, row)
+		}
+		location := row[0]
+		code := row[1]
+		name := row[2]
+
+		var l Location
+		if err := json.Unmarshal([]byte(location), &l); err != nil {
+			return fmt.Errorf("invalid JSON in 'location' at row %d: %v", i+1, err)
+		}
+
+		if !validString.MatchString(code) {
+			return fmt.Errorf("invalid stop ID at row %d: %q (must be alphanumeric)", i+1, code)
+		}
+
+		var n i18nCell
+		if err := json.Unmarshal([]byte(name), &n); err != nil {
+			return fmt.Errorf("invalid JSON in 'name' at row %d: %v", i+1, err)
+		}
+
+		_, err = stmt.ExecContext(ctx, code, location, name)
 		if err != nil {
 			tx.Rollback()
-			return fmt.Errorf("prepare failed: %w", err)
+			return fmt.Errorf("failed to insert row %d: %v", i+1, err)
 		}
 
-		for _, s := range data.Results {
-			if _, err := stmt.ExecContext(ctx, s.ID, s.GPSCoordinates, s.Name); err != nil {
-				stmt.Close()
-				tx.Rollback()
-				return fmt.Errorf("insert failed: %w", err)
+		count++
+
+		if count%batchSize == 0 {
+			if err := tx.Commit(); err != nil {
+				return err
 			}
+			fmt.Printf("'Stops' batch complete: #%d \n", count/batchSize)
+
+			tx, err = db.BeginTx(ctx, nil)
+			if err != nil {
+				return err
+			}
+
+			stmt, err = tx.PrepareContext(ctx, `INSERT INTO stops (code, geo, name) VALUES (?, ?, ?)`)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+
+			defer stmt.Close()
 		}
-
-		stmt.Close()
-		if err := tx.Commit(); err != nil {
-			return fmt.Errorf("commit failed: %w", err)
-		}
-
-		log.Printf("Seeded stops batch offset=%d", offset)
-		offset += stopQuery.batch
-
-		if offset >= totalCount {
-			break
-		}
-
-		time.Sleep(500 * time.Millisecond)
 	}
 
-	log.Println("✅ Done seeding stops")
+	// Commit remaining rows if any
+	if count%batchSize != 0 {
+		if err := tx.Commit(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
