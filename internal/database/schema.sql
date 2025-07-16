@@ -22,4 +22,4 @@ CREATE TABLE lines (
   destination TEXT NOT NULL,
   direction INT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+, mode TEXT, color TEXT);
