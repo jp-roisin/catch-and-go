@@ -53,8 +53,10 @@ func SeedLines(ctx context.Context, db *sql.DB) error {
 			return fmt.Errorf("invalid stop ID at row %d: %q (must be alphanumeric)", i+1, direction)
 		}
 
-		if !validString.MatchString(code) {
-			return fmt.Errorf("invalid stop ID at row %d: %q (must be alphanumeric)", i+1, code)
+		if !validInteger.MatchString(code) {
+			// Filtering lineIds like "N12"
+			fmt.Printf("Skipping lineId containing letters: %s\n", code)
+			continue
 		}
 
 		// Casting the direction ("City" || "Suburb") into a boolean
