@@ -23,3 +23,12 @@ CREATE TABLE lines (
   direction INT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 , mode TEXT, color TEXT);
+CREATE TABLE stops_by_lines (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  stop_id INTEGER NOT NULL,
+  line_id INTEGER NOT NULL,
+  "order" INTEGER NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_stop FOREIGN KEY (stop_id) REFERENCES stops(id),
+  CONSTRAINT fk_line FOREIGN KEY (line_id) REFERENCES lines(id)
+);
