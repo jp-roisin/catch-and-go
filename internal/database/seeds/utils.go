@@ -13,6 +13,7 @@ type i18nCell struct {
 }
 
 var validString = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
+var validInteger = regexp.MustCompile(`^\d+$`)
 
 const batchSize = 100
 
