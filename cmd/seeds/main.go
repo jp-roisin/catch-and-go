@@ -31,5 +31,10 @@ func main() {
 	}
 	log.Println("✅ Lines seeding successful")
 
+	if err := seeds.SeedLinesMetadatas(ctx, db); err != nil {
+		log.Fatalf("❌ Lines metadata seeding failed:\n %v", err)
+	}
+	log.Println("✅ Lines metadata seeding successful")
+
 	log.Println("✅ Seeding complete")
 }
