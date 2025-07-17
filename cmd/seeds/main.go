@@ -6,12 +6,14 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/joho/godotenv/autoload"
+	"github.com/jp-roisin/catch-and-go/internal/database"
 	"github.com/jp-roisin/catch-and-go/internal/database/seeds"
 	_ "github.com/mattn/go-sqlite3"
-	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
+	service := database.New()
 	dburl := os.Getenv("BLUEPRINT_DB_URL")
 	db, err := sql.Open("sqlite3", dburl)
 	if err != nil {
@@ -35,6 +37,11 @@ func main() {
 		log.Fatalf("❌ Lines metadata seeding failed:\n %v", err)
 	}
 	log.Println("✅ Lines metadata seeding successful")
+
+	if err := seeds.SeedStopsByLines(ctx, db, service); err != nil {
+		log.Fatalf("❌ Stops by Lines seeding failed:\n %v", err)
+	}
+	log.Println("✅ Stops by Lines seeding successful")
 
 	log.Println("✅ Seeding complete")
 }

@@ -3,6 +3,8 @@ sql:
   - engine: "sqlite"
     queries:
       - "internal/database/queries/sessions.sql"
+      - "internal/database/queries/lines.sql"
+      - "internal/database/queries/stops.sql"
     schema: "internal/database/schema.sql"
     gen:
       go:
