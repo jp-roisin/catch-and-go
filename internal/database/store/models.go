@@ -15,6 +15,16 @@ type GooseDbVersion struct {
 	Tstamp    sql.NullTime
 }
 
+type Line struct {
+	ID          int64
+	Code        string
+	Destination string
+	Direction   int64
+	CreatedAt   sql.NullTime
+	Mode        sql.NullString
+	Color       sql.NullString
+}
+
 type Session struct {
 	ID        string
 	CreatedAt sql.NullTime
@@ -23,4 +33,20 @@ type Session struct {
 type SqliteSequence struct {
 	Name interface{}
 	Seq  interface{}
+}
+
+type Stop struct {
+	ID        int64
+	Code      string
+	Geo       string
+	Name      string
+	CreatedAt sql.NullTime
+}
+
+type StopsByLine struct {
+	ID        int64
+	StopID    int64
+	LineID    int64
+	Order     int64
+	CreatedAt sql.NullTime
 }
