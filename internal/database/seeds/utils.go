@@ -53,6 +53,16 @@ func readCsvFile(filePath string) ([][]string, error) {
 	return records, nil
 }
 
+// Converts a direction string ("City" or "Suburb") to an integer
+// representation suitable for SQLite, which doesn't support boolean types.
+// Returns 1 for "City" and 0 for "Suburb".
+func directionToBoolean(direction string) int {
+	if direction == "Suburb" {
+		return 0
+	}
+	return 1
+}
+
 // Returns a fallback Stop struct representing an "unknown stop" location.
 // The coordinates are set to the Brussels Grand Place as a neutral central location.
 // The stop name is localized in French and Dutch with a clear "not found" label.

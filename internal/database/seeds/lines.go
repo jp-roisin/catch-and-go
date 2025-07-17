@@ -60,12 +60,7 @@ func SeedLines(ctx context.Context, db *sql.DB) error {
 			continue
 		}
 
-		// Casting the direction ("City" || "Suburb") into a boolean
-		booleanDirection := 1
-		if direction == "Suburb" {
-			booleanDirection = 0
-		}
-		_, err = stmt.ExecContext(ctx, code, destination, booleanDirection)
+		_, err = stmt.ExecContext(ctx, code, destination, directionToBoolean(direction))
 		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to insert row %d: %v", i+1, err)
