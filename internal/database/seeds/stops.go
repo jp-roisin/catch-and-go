@@ -9,11 +9,6 @@ import (
 
 const stopDetailsFilePath = "internal/database/seeds/data/stop-details-production.csv"
 
-type Location struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
-}
-
 func SeedStops(ctx context.Context, db *sql.DB) error {
 	stopsResult, err := readCsvFile(stopDetailsFilePath)
 	if err != nil {
@@ -34,6 +29,20 @@ func SeedStops(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 	defer stmt.Close()
+
+	// Insert a fallback "unknown stop" as the first row in the stops table.
+	// This stop is used as a default reference in the stops_by_lines table
+	// when a stop cannot be resolved from the csv.
+	us, err := getUnknownStop()
+	if err != nil {
+		return fmt.Errorf("failed to generate the unknown stop: %v", err)
+	}
+
+	_, err = stmt.ExecContext(ctx, us.Code, us.Geo, us.Name)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to insert unknown stop row: %v", err)
+	}
 
 	count := 0
 
