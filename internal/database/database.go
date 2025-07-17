@@ -25,6 +25,8 @@ type Service interface {
 	Close() error
 	GetSession(ctx context.Context, token string) (store.Session, error)
 	CreateSession(ctx context.Context, token string) (store.Session, error)
+	GetLine(ctx context.Context, param store.GetLineParams) (store.Line, error)
+	GetStop(ctx context.Context, code string) (store.Stop, error)
 }
 
 type service struct {
@@ -123,4 +125,12 @@ func (s *service) GetSession(ctx context.Context, token string) (store.Session, 
 
 func (s *service) CreateSession(ctx context.Context, token string) (store.Session, error) {
 	return s.queries.CreateSession(ctx, token)
+}
+
+func (s *service) GetLine(ctx context.Context, param store.GetLineParams) (store.Line, error) {
+	return s.queries.GetLine(ctx, param)
+}
+
+func (s *service) GetStop(ctx context.Context, code string) (store.Stop, error) {
+	return s.queries.GetStop(ctx, code)
 }
