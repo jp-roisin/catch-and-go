@@ -1,12 +1,14 @@
 package server
 
 import (
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"github.com/jp-roisin/catch-and-go/cmd/web"
+	"github.com/jp-roisin/catch-and-go/internal/database/store"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -15,42 +17,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
-		KeyLookup: `cookie:"token"`,
-		Validator: func(key string, c echo.Context) (bool, error) {
-			ctx := c.Request().Context()
-
-			// TODO: Cache tokens in memory to avoid hitting the DB on every request.
-			// A simple in-memory map might be enough, or consider using an LRU cache:
-			// https://github.com/hashicorp/golang-lru
-			_, err := s.db.GetSession(ctx, key)
-			if err != nil {
-				return false, c.String(http.StatusUnauthorized, "Session token is not valid")
-			}
-			return true, nil
-		},
-		ErrorHandler: func(err error, c echo.Context) error {
-			ctx := c.Request().Context()
-
-			session, err := s.db.CreateSession(ctx, uuid.New().String())
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "Couldn't create a session token")
-			}
-
-			c.SetCookie(
-				&http.Cookie{
-					Name:     "token",
-					Value:    session.ID,
-					Path:     "/",
-					HttpOnly: true,
-					Expires:  time.Now().Add(365 * 24 * time.Hour),
-				},
-			)
-
-			return nil
-		},
-	}))
-
+	e.Use(s.AnonymousSessionMiddleware())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"https://*", "http://*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
@@ -82,4 +49,48 @@ func (s *Server) HelloWorldHandler(c echo.Context) error {
 
 func (s *Server) healthHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, s.db.Health())
+}
+
+func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			ctx := c.Request().Context()
+
+			cookie, err := c.Cookie("token")
+			var session store.Session
+
+			if err == nil {
+				session, err = s.db.GetSession(ctx, cookie.Value)
+
+				if err != nil {
+					// Token is invalid or expired — reject the request
+					// TODO clear previous + create a new token
+					log.Printf("Invalid session token: %s", cookie.Value)
+					return c.String(http.StatusUnauthorized, "Invalid session token")
+				}
+
+			} else {
+				// Create a new anonymous session
+				session, err = s.db.CreateSession(ctx, uuid.New().String())
+				if err != nil {
+					return c.String(http.StatusInternalServerError, "Couldn't create session")
+				}
+
+				c.SetCookie(&http.Cookie{
+					Name:     "token",
+					Value:    session.ID,
+					Path:     "/",
+					HttpOnly: true,
+					SameSite: http.SameSiteStrictMode,
+					Expires:  time.Now().Add(365 * 24 * time.Hour),
+				})
+			}
+
+			c.Set("session", session)
+			log.Printf("Active session: %s", session.ID)
+
+			// Continue the request
+			return next(c)
+		}
+	}
 }
