@@ -15,13 +15,13 @@ INSERT INTO sessions (
 ) VALUES (
     ?
 )
-RETURNING id, created_at
+RETURNING id, created_at, locale
 `
 
 func (q *Queries) CreateSession(ctx context.Context, id string) (Session, error) {
 	row := q.db.QueryRowContext(ctx, createSession, id)
 	var i Session
-	err := row.Scan(&i.ID, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.CreatedAt, &i.Locale)
 	return i, err
 }
 
@@ -36,19 +36,19 @@ func (q *Queries) DeleteSession(ctx context.Context, id string) error {
 }
 
 const getSession = `-- name: GetSession :one
-SELECT id, created_at FROM sessions
+SELECT id, created_at, locale FROM sessions
 WHERE id = ? LIMIT 1
 `
 
 func (q *Queries) GetSession(ctx context.Context, id string) (Session, error) {
 	row := q.db.QueryRowContext(ctx, getSession, id)
 	var i Session
-	err := row.Scan(&i.ID, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.CreatedAt, &i.Locale)
 	return i, err
 }
 
 const listSessions = `-- name: ListSessions :many
-SELECT id, created_at FROM sessions
+SELECT id, created_at, locale FROM sessions
 ORDER BY created_at DESC
 `
 
@@ -61,7 +61,7 @@ func (q *Queries) ListSessions(ctx context.Context) ([]Session, error) {
 	var items []Session
 	for rows.Next() {
 		var i Session
-		if err := rows.Scan(&i.ID, &i.CreatedAt); err != nil {
+		if err := rows.Scan(&i.ID, &i.CreatedAt, &i.Locale); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
