@@ -28,6 +28,7 @@ type Line struct {
 type Session struct {
 	ID        string
 	CreatedAt sql.NullTime
+	Locale    string
 }
 
 type SqliteSequence struct {

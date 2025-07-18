@@ -1,0 +1,20 @@
+package components
+
+templ Header(locale string) {
+	<header class="min-h-20 px-4 flex items-center justify-between bg-black text-white">
+		<div class="flex items-center gap-4">
+			<img src="/assets/images/stib.png" alt="Logo" class="h-10 w-auto"/>
+			<h1 class="font-sans text-2xl font-bold">Catch&Go</h1>
+		</div>
+		<div>
+			<select
+				name="locale"
+				hx-put="/locale"
+				class="border border-white px-4 py-2 rounded-md"
+			>
+				<option value="fr" selected?={ locale == "fr" }>Français</option>
+				<option value="nl" selected?={ locale == "nl" }>Nederlands</option>
+			</select>
+		</div>
+	</header>
+}

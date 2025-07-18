@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"github.com/jp-roisin/catch-and-go/cmd/web"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
@@ -29,12 +28,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	fileServer := http.FileServer(http.FS(web.Files))
 	e.GET("/assets/*", echo.WrapHandler(fileServer))
 
-	e.GET("/web", echo.WrapHandler(templ.Handler(web.HelloForm())))
-	e.POST("/hello", echo.WrapHandler(http.HandlerFunc(web.HelloWebHandler)))
-
-	e.GET("/", s.HelloWorldHandler)
-
+	e.GET("/", web.BaseWebHandler)
 	e.GET("/health", s.healthHandler)
+	e.PUT("/locale", s.UpdateLocale)
 
 	return e
 }
@@ -49,6 +45,34 @@ func (s *Server) HelloWorldHandler(c echo.Context) error {
 
 func (s *Server) healthHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, s.db.Health())
+}
+
+func (s *Server) UpdateLocale(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	locale := c.FormValue("locale")
+	if locale != "fr" && locale != "nl" {
+		return c.String(http.StatusBadRequest, "Invalid locale")
+	}
+
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	param := store.UpdateLocaleParams{
+		ID:     session.ID,
+		Locale: locale,
+	}
+
+	err := s.db.UpdateLocale(ctx, param)
+	if err != nil {
+		return err
+	}
+
+	// Refresh the page to apply the new locale
+	c.Response().Header().Set("HX-Refresh", "true")
+	return c.JSON(http.StatusNoContent, nil)
 }
 
 func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
@@ -68,7 +92,6 @@ func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
 					log.Printf("Invalid session token: %s", cookie.Value)
 					return c.String(http.StatusUnauthorized, "Invalid session token")
 				}
-
 			} else {
 				// Create a new anonymous session
 				session, err = s.db.CreateSession(ctx, uuid.New().String())
@@ -81,12 +104,13 @@ func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
 					Value:    session.ID,
 					Path:     "/",
 					HttpOnly: true,
+					Secure:   true,
 					SameSite: http.SameSiteStrictMode,
 					Expires:  time.Now().Add(365 * 24 * time.Hour),
 				})
 			}
 
-			c.Set("session", session)
+			c.Set("session", &session)
 			log.Printf("Active session: %s", session.ID)
 
 			// Continue the request
