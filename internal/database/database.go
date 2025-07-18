@@ -30,6 +30,9 @@ type Service interface {
 	UpdateLocale(ctx context.Context, param store.UpdateLocaleParams) error
 
 	GetLine(ctx context.Context, param store.GetLineParams) (store.Line, error)
+	ListLines(ctx context.Context) ([]store.Line, error)
+	ListLinesByDirection(ctx context.Context, direction int) ([]store.Line, error)
+
 	GetStop(ctx context.Context, code string) (store.Stop, error)
 }
 
@@ -135,10 +138,17 @@ func (s *service) GetLine(ctx context.Context, param store.GetLineParams) (store
 	return s.queries.GetLine(ctx, param)
 }
 
+func (s *service) ListLines(ctx context.Context) ([]store.Line, error) {
+	return s.queries.ListLines(ctx)
+}
+func (s *service) ListLinesByDirection(ctx context.Context, direction int) ([]store.Line, error) {
+	return s.queries.ListLinesByDirection(ctx, int64(direction))
+}
+
 func (s *service) GetStop(ctx context.Context, code string) (store.Stop, error) {
 	return s.queries.GetStop(ctx, code)
 }
 
-func (s *service) UpdateLocale(ctx context.Context, param store.UpdateLocaleParams)  error {
+func (s *service) UpdateLocale(ctx context.Context, param store.UpdateLocaleParams) error {
 	return s.queries.UpdateLocale(ctx, param)
 }
