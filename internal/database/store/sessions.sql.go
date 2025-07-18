@@ -74,3 +74,19 @@ func (q *Queries) ListSessions(ctx context.Context) ([]Session, error) {
 	}
 	return items, nil
 }
+
+const updateLocale = `-- name: UpdateLocale :exec
+UPDATE sessions
+set locale = ?
+WHERE id = ?
+`
+
+type UpdateLocaleParams struct {
+	Locale string
+	ID     string
+}
+
+func (q *Queries) UpdateLocale(ctx context.Context, arg UpdateLocaleParams) error {
+	_, err := q.db.ExecContext(ctx, updateLocale, arg.Locale, arg.ID)
+	return err
+}

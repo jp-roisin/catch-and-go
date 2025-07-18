@@ -23,8 +23,12 @@ type Service interface {
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close() error
+
+	// Sessions
 	GetSession(ctx context.Context, token string) (store.Session, error)
 	CreateSession(ctx context.Context, token string) (store.Session, error)
+	UpdateLocale(ctx context.Context, param store.UpdateLocaleParams) error
+
 	GetLine(ctx context.Context, param store.GetLineParams) (store.Line, error)
 	GetStop(ctx context.Context, code string) (store.Stop, error)
 }
@@ -133,4 +137,8 @@ func (s *service) GetLine(ctx context.Context, param store.GetLineParams) (store
 
 func (s *service) GetStop(ctx context.Context, code string) (store.Stop, error) {
 	return s.queries.GetStop(ctx, code)
+}
+
+func (s *service) UpdateLocale(ctx context.Context, param store.UpdateLocaleParams)  error {
+	return s.queries.UpdateLocale(ctx, param)
 }
