@@ -28,7 +28,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	fileServer := http.FileServer(http.FS(web.Files))
 	e.GET("/assets/*", echo.WrapHandler(fileServer))
 
-	e.GET("/", echo.WrapHandler(http.HandlerFunc(web.BaseWebHandler)))
+	e.GET("/", web.BaseWebHandler)
 	e.GET("/health", s.healthHandler)
 
 	return e
@@ -63,7 +63,6 @@ func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
 					log.Printf("Invalid session token: %s", cookie.Value)
 					return c.String(http.StatusUnauthorized, "Invalid session token")
 				}
-
 			} else {
 				// Create a new anonymous session
 				session, err = s.db.CreateSession(ctx, uuid.New().String())
@@ -76,12 +75,13 @@ func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
 					Value:    session.ID,
 					Path:     "/",
 					HttpOnly: true,
+					Secure:   true,
 					SameSite: http.SameSiteStrictMode,
 					Expires:  time.Now().Add(365 * 24 * time.Hour),
 				})
 			}
 
-			c.Set("session", session)
+			c.Set("session", &session)
 			log.Printf("Active session: %s", session.ID)
 
 			// Continue the request
