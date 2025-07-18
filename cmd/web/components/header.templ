@@ -7,7 +7,11 @@ templ Header(locale string) {
 			<h1>Catch and go!</h1>
 		</div>
 		<div>
-			<select name="make" hx-get="/locale" hx-indicator=".htmx-indicator" class="border border-white px-4 py-2 rounded-md">
+			<select
+				name="locale"
+				hx-put="/locale"
+				class="border border-white px-4 py-2 rounded-md"
+			>
 				<option value="fr" selected?={ locale == "fr" }>Français</option>
 				<option value="nl" selected?={ locale == "nl" }>Nederlands</option>
 			</select>

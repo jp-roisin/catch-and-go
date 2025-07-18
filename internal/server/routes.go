@@ -30,6 +30,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	e.GET("/", web.BaseWebHandler)
 	e.GET("/health", s.healthHandler)
+	e.PUT("/locale", s.UpdateLocale)
 
 	return e
 }
@@ -44,6 +45,34 @@ func (s *Server) HelloWorldHandler(c echo.Context) error {
 
 func (s *Server) healthHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, s.db.Health())
+}
+
+func (s *Server) UpdateLocale(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	locale := c.FormValue("locale")
+	if locale != "fr" && locale != "nl" {
+		return c.String(http.StatusBadRequest, "Invalid locale")
+	}
+
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	param := store.UpdateLocaleParams{
+		ID:     session.ID,
+		Locale: locale,
+	}
+
+	err := s.db.UpdateLocale(ctx, param)
+	if err != nil {
+		return err
+	}
+
+	// Refresh the page to apply the new locale
+	c.Response().Header().Set("HX-Refresh", "true")
+	return c.JSON(http.StatusNoContent, nil)
 }
 
 func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
