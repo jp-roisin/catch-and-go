@@ -28,7 +28,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	fileServer := http.FileServer(http.FS(web.Files))
 	e.GET("/assets/*", echo.WrapHandler(fileServer))
 
-	e.GET("/", web.BaseWebHandler)
+	e.GET("/", s.BaseWebHandler)
 	e.GET("/health", s.healthHandler)
 	e.PUT("/locale", s.UpdateLocale)
 
@@ -73,6 +73,21 @@ func (s *Server) UpdateLocale(c echo.Context) error {
 	// Refresh the page to apply the new locale
 	c.Response().Header().Set("HX-Refresh", "true")
 	return c.JSON(http.StatusNoContent, nil)
+}
+
+func (s *Server) BaseWebHandler(c echo.Context) error {
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	component := web.Base(session.Locale)
+	err := component.Render(c.Request().Context(), c.Response())
+	if err != nil {
+		log.Printf("Error rendering in BaseWebHandler: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return nil
 }
 
 func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
