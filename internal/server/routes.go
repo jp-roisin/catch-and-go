@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"github.com/jp-roisin/catch-and-go/cmd/web"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
@@ -29,11 +28,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	fileServer := http.FileServer(http.FS(web.Files))
 	e.GET("/assets/*", echo.WrapHandler(fileServer))
 
-	e.GET("/web", echo.WrapHandler(templ.Handler(web.HelloForm())))
-	e.POST("/hello", echo.WrapHandler(http.HandlerFunc(web.HelloWebHandler)))
-
-	e.GET("/", s.HelloWorldHandler)
-
+	e.GET("/", echo.WrapHandler(http.HandlerFunc(web.BaseWebHandler)))
 	e.GET("/health", s.healthHandler)
 
 	return e
