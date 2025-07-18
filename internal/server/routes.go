@@ -3,10 +3,10 @@ package server
 import (
 	"log"
 	"net/http"
-	"time"
+	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jp-roisin/catch-and-go/cmd/web"
+	"github.com/jp-roisin/catch-and-go/cmd/web/components"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -31,6 +31,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.GET("/", s.BaseWebHandler)
 	e.GET("/health", s.healthHandler)
 	e.PUT("/locale", s.UpdateLocale)
+
+	e.GET("/lines/picker", s.LinesPickerHandler)
 
 	return e
 }
@@ -88,4 +90,24 @@ func (s *Server) BaseWebHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return nil
+}
+
+func (s *Server) LinesPickerHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	var linesWithFallback []store.LineWithFallback
+	lines, err := s.db.ListLinesByDirection(ctx, int(store.TowardsCity))
+	for _, l := range lines {
+		linesWithFallback = append(linesWithFallback, l.AddFallback())
+	}
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the lines info")
+	}
+
+	var sb strings.Builder
+	if err := components.LinePicker(linesWithFallback).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the line pickers failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
 }
