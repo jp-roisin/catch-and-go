@@ -17,3 +17,8 @@ RETURNING *;
 -- name: DeleteSession :exec
 DELETE from sessions
 WHERE id = ?;
+
+-- name: UpdateLocale :exec
+UPDATE sessions
+set locale = ?
+WHERE id = ?;
