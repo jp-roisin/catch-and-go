@@ -3,10 +3,10 @@ package server
 import (
 	"log"
 	"net/http"
-	"time"
+	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jp-roisin/catch-and-go/cmd/web"
+	"github.com/jp-roisin/catch-and-go/cmd/web/components"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -28,9 +28,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 	fileServer := http.FileServer(http.FS(web.Files))
 	e.GET("/assets/*", echo.WrapHandler(fileServer))
 
-	e.GET("/", web.BaseWebHandler)
+	e.GET("/", s.BaseWebHandler)
 	e.GET("/health", s.healthHandler)
 	e.PUT("/locale", s.UpdateLocale)
+
+	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
+	e.GET("/lines/picker", s.LinesPickerHandler)
 
 	return e
 }
@@ -75,46 +78,46 @@ func (s *Server) UpdateLocale(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			ctx := c.Request().Context()
-
-			cookie, err := c.Cookie("token")
-			var session store.Session
-
-			if err == nil {
-				session, err = s.db.GetSession(ctx, cookie.Value)
-
-				if err != nil {
-					// Token is invalid or expired — reject the request
-					// TODO clear previous + create a new token
-					log.Printf("Invalid session token: %s", cookie.Value)
-					return c.String(http.StatusUnauthorized, "Invalid session token")
-				}
-			} else {
-				// Create a new anonymous session
-				session, err = s.db.CreateSession(ctx, uuid.New().String())
-				if err != nil {
-					return c.String(http.StatusInternalServerError, "Couldn't create session")
-				}
-
-				c.SetCookie(&http.Cookie{
-					Name:     "token",
-					Value:    session.ID,
-					Path:     "/",
-					HttpOnly: true,
-					Secure:   true,
-					SameSite: http.SameSiteStrictMode,
-					Expires:  time.Now().Add(365 * 24 * time.Hour),
-				})
-			}
-
-			c.Set("session", &session)
-			log.Printf("Active session: %s", session.ID)
-
-			// Continue the request
-			return next(c)
-		}
+func (s *Server) BaseWebHandler(c echo.Context) error {
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
 	}
+
+	component := web.Base(session.Locale)
+	err := component.Render(c.Request().Context(), c.Response())
+	if err != nil {
+		log.Printf("Error rendering in BaseWebHandler: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return nil
+}
+
+func (s *Server) LinesPickerHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	var linesWithFallback []store.LineWithFallback
+	lines, err := s.db.ListLinesByDirection(ctx, int(store.TowardsCity))
+	for _, l := range lines {
+		linesWithFallback = append(linesWithFallback, l.AddFallback())
+	}
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the lines info")
+	}
+
+	var sb strings.Builder
+	if err := components.LinePicker(linesWithFallback).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the line pickers failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
+}
+
+func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
+	var sb strings.Builder
+	if err := components.Empty_state().Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
 }

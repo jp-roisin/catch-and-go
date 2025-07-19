@@ -1,0 +1,29 @@
+package components
+
+import "github.com/jp-roisin/catch-and-go/internal/database/store"
+import "fmt"
+
+templ LinePicker(lines []store.LineWithFallback) {
+	<div class="w-48/100 min-w-xl aspect-video bg-white rounded-xl p-4" id="box">
+		<ul class="flex flex-wrap gap-2">
+			for _, line := range lines {
+				<li>
+					<button
+						class="text-white size-[40px] rounded grid place-items-center cursor-pointer font-semibold"
+						style={ fmt.Sprintf("background-color:%s", line.Color) }
+					>
+						{ line.Code }
+					</button>
+				</li>
+			}
+		</ul>
+		<div class="w-full mt-4 flex justify-end">
+			<button
+				hx-get="/lines/empty_state"
+				hx-target="#box"
+				hx-swap="outerHTML"
+				class="bg-[#262624] hover:bg-[#383835] text-white cursor-pointer rounded-md px-4 py-2 self-center"
+			>Cancel</button>
+		</div>
+	</div>
+}

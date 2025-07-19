@@ -69,3 +69,40 @@ func (q *Queries) ListLines(ctx context.Context) ([]Line, error) {
 	}
 	return items, nil
 }
+
+const listLinesByDirection = `-- name: ListLinesByDirection :many
+SELECT id, code, destination, direction, created_at, mode, color FROM lines
+WHERE direction = ?
+ORDER BY code ASC
+`
+
+func (q *Queries) ListLinesByDirection(ctx context.Context, direction int64) ([]Line, error) {
+	rows, err := q.db.QueryContext(ctx, listLinesByDirection, direction)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Line
+	for rows.Next() {
+		var i Line
+		if err := rows.Scan(
+			&i.ID,
+			&i.Code,
+			&i.Destination,
+			&i.Direction,
+			&i.CreatedAt,
+			&i.Mode,
+			&i.Color,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
