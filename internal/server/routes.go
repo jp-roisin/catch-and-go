@@ -1,8 +1,10 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/jp-roisin/catch-and-go/cmd/web"
@@ -34,6 +36,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
 	e.GET("/lines/picker", s.LinesPickerHandler)
+	e.GET("/stops/picker/:lineId", s.StopsPickerHandler)
 
 	return e
 }
@@ -117,6 +120,27 @@ func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
 	var sb strings.Builder
 	if err := components.Empty_state().Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
+}
+
+func (s *Server) StopsPickerHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	lineID := c.Param("lineId")
+	id, err := strconv.Atoi(lineID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid lineId: %q is not a number", lineID))
+	}
+
+	stops, err := s.db.ListStopsFromLine(ctx, id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the stops info")
+	}
+
+	var sb strings.Builder
+	if err := components.StopPicker(stops).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the stops pickers failed")
 	}
 
 	return c.HTML(http.StatusOK, sb.String())
