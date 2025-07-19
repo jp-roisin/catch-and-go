@@ -15,9 +15,9 @@ templ Base(locale string) {
 		</head>
 		<body>
 			@components.Header(locale)
-			<main class="h-[calc(100vh-80px)] px-6 py-4 bg-gray-100">
+			<main class="h-[calc(100vh-80px)] px-6 py-4 bg-[#fafaf7]">
 				<div class="flex flex-wrap gap-4">
-					<div hx-get="/lines/picker" hx-trigger="load" hx-swap="outerHTML"></div>
+					<div hx-get="/lines/empty_state" hx-trigger="load" hx-swap="outerHTML"></div>
 				</div>
 			</main>
 		</body>
