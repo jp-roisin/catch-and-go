@@ -32,6 +32,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.GET("/health", s.healthHandler)
 	e.PUT("/locale", s.UpdateLocale)
 
+	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
 	e.GET("/lines/picker", s.LinesPickerHandler)
 
 	return e
@@ -107,6 +108,15 @@ func (s *Server) LinesPickerHandler(c echo.Context) error {
 	var sb strings.Builder
 	if err := components.LinePicker(linesWithFallback).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the line pickers failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
+}
+
+func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
+	var sb strings.Builder
+	if err := components.Empty_state().Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
 	return c.HTML(http.StatusOK, sb.String())
