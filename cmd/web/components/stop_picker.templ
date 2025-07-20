@@ -3,21 +3,50 @@ package components
 import "github.com/jp-roisin/catch-and-go/internal/database/store"
 
 templ StopPicker(stops []store.Stop) {
-	<div class="w-48/100 min-w-xl aspect-video bg-white rounded-xl p-4" id="box">
-		<ul class="max-h-full flex flex-col flex-wrap">
-			for _, stop := range stops {
-				<li>
-					{ stop.Name }
-				</li>
-			}
-		</ul>
+	<div
+		class="w-48/100 min-w-xl aspect-video bg-white rounded-xl p-4"
+		id="box"
+	>
+		<div class="h-full overflow-y-auto">
+			<form class="grid grid-cols-2 gap-2">
+				for i, stop := range stops {
+					<label
+						for={ stop.ID }
+						class="bg-[#fafaf7] hover:bg-[#f6f5f1] p-2 flex items-center gap-2 rounded cursor-pointer"
+					>
+						<input
+							type="radio"
+							id={ stop.ID }
+							value={ stop.ID }
+							name="stop"
+							disabled?={ stop.ID == 1 }
+							checked?={ i == 0 }
+						/>
+						<span>{ stop.Name }</span>
+					</label>
+				}
+			</form>
+		</div>
 		<div class="w-full mt-4 flex justify-end">
-			<button
-				hx-get="/lines/empty_state"
-				hx-target="#box"
-				hx-swap="outerHTML"
-				class="bg-[#262624] hover:bg-[#383835] text-white cursor-pointer rounded-md px-4 py-2 self-center"
-			>Cancel</button>
+			<div class="flex gap-2">
+				<button
+					hx-get="/lines/empty_state"
+					hx-target="#box"
+					hx-swap="outerHTML"
+					class="bg-white hover:bg-[#f6f5f1] cursor-pointer rounded-md px-4 py-2 self-center"
+				>
+					Cancel
+				</button>
+				<button
+					type="submit"
+					hx-post="/TODO"
+					hx-target="#box"
+					hx-swap="outerHTML"
+					class="bg-[#262624] hover:bg-[#383835] text-white cursor-pointer rounded-md px-4 py-2 self-center"
+				>
+					Save
+				</button>
+			</div>
 		</div>
 	</div>
 }
