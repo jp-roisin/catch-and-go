@@ -133,6 +133,11 @@ func (s *Server) StopsPickerHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid lineId: %q is not a number", lineID))
 	}
 
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
 	stops, err := s.db.ListStopsFromLine(ctx, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the stops info")
@@ -140,7 +145,7 @@ func (s *Server) StopsPickerHandler(c echo.Context) error {
 
 	var props []store.Stop
 	for _, s := range stops {
-		translatedStop, err := s.Translate("fr")
+		translatedStop, err := s.Translate(session.Locale)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Something is wrong about this stop info: %v", s.Code))
 		}

@@ -51,7 +51,7 @@ func (l *Line) AddFallback() LineWithFallback {
 
 type i18n struct {
 	Fr string `json:"fr"`
-	Nl string `json:"nk"`
+	Nl string `json:"nl"`
 }
 
 func (s *Stop) Translate(locale string) (Stop, error) {
