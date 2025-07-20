@@ -4,7 +4,7 @@ import "github.com/jp-roisin/catch-and-go/internal/database/store"
 
 templ StopPicker(stops []store.Stop) {
 	<div class="w-48/100 min-w-xl aspect-video bg-white rounded-xl p-4" id="box">
-		<ul>
+		<ul class="max-h-full flex flex-col flex-wrap">
 			for _, stop := range stops {
 				<li>
 					{ stop.Name }

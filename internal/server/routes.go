@@ -138,8 +138,17 @@ func (s *Server) StopsPickerHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the stops info")
 	}
 
+	var props []store.Stop
+	for _, s := range stops {
+		translatedStop, err := s.Translate("fr")
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Something is wrong about this stop info: %v", s.Code))
+		}
+		props = append(props, translatedStop)
+	}
+
 	var sb strings.Builder
-	if err := components.StopPicker(stops).Render(c.Request().Context(), &sb); err != nil {
+	if err := components.StopPicker(props).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the stops pickers failed")
 	}
 
