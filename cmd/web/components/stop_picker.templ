@@ -13,6 +13,9 @@ templ StopPicker(stops []store.Stop) {
 					<label
 						for={ stop.ID }
 						class="bg-[#fafaf7] hover:bg-[#f6f5f1] p-2 flex items-center gap-2 rounded cursor-pointer"
+						if stop.ID == 1 {
+							style="background-color: #f6f5f1"
+						}
 					>
 						<input
 							type="radio"
@@ -29,7 +32,7 @@ templ StopPicker(stops []store.Stop) {
 		</div>
 		<div class="w-full mt-4 flex justify-end">
 			<div class="flex gap-2">
-        @cancel_button()
+				@cancel_button()
 				<button
 					type="submit"
 					hx-post="/TODO"
