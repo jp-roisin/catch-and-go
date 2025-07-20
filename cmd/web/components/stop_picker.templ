@@ -29,14 +29,7 @@ templ StopPicker(stops []store.Stop) {
 		</div>
 		<div class="w-full mt-4 flex justify-end">
 			<div class="flex gap-2">
-				<button
-					hx-get="/lines/empty_state"
-					hx-target="#box"
-					hx-swap="outerHTML"
-					class="bg-white hover:bg-[#f6f5f1] cursor-pointer rounded-md px-4 py-2 self-center"
-				>
-					Cancel
-				</button>
+        @cancel_button()
 				<button
 					type="submit"
 					hx-post="/TODO"
