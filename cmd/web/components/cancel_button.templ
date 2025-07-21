@@ -1,0 +1,12 @@
+package components
+
+templ cancel_button() {
+	<button
+		hx-get="/lines/empty_state"
+		hx-target="#box"
+		hx-swap="outerHTML"
+		class="bg-white hover:bg-[#f6f5f1] cursor-pointer rounded-md px-4 py-2 self-center"
+	>
+		Cancel
+	</button>
+}

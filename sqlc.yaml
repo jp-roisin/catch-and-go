@@ -5,6 +5,8 @@ sql:
       - "internal/database/queries/sessions.sql"
       - "internal/database/queries/lines.sql"
       - "internal/database/queries/stops.sql"
+      - "internal/database/queries/stops_by_lines.sql"
+      - "internal/database/queries/dashboards.sql"
     schema: "internal/database/schema.sql"
     gen:
       go:

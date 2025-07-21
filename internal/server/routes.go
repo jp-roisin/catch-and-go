@@ -1,8 +1,10 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/jp-roisin/catch-and-go/cmd/web"
@@ -34,6 +36,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
 	e.GET("/lines/picker", s.LinesPickerHandler)
+	e.GET("/stops/picker/:lineId", s.StopsPickerHandler)
+
+	e.POST("/dashboards", s.CreateDashboardHandler)
 
 	return e
 }
@@ -120,4 +125,68 @@ func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
 	}
 
 	return c.HTML(http.StatusOK, sb.String())
+}
+
+func (s *Server) StopsPickerHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	lineID := c.Param("lineId")
+	id, err := strconv.Atoi(lineID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid lineId: %q is not a number", lineID))
+	}
+
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	stops, err := s.db.ListStopsFromLine(ctx, id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the stops info")
+	}
+
+	var props []store.Stop
+	for _, s := range stops {
+		translatedStop, err := s.Translate(session.Locale)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Something is wrong about this stop info: %v", s.Code))
+		}
+		props = append(props, translatedStop)
+	}
+
+	var sb strings.Builder
+	if err := components.StopPicker(props).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the stops pickers failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
+}
+
+func (s *Server) CreateDashboardHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	stopId, err := strconv.Atoi(c.FormValue("stop_id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid stop_id: must be an integer")
+	}
+
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	_, dbErr := s.db.CreateDashboard(ctx, store.CreatedashboardParams{
+		SessionID: session.ID,
+		StopID:    int64(stopId),
+	})
+	if dbErr != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't persist the dashboard")
+	}
+
+	var sb strings.Builder
+	if err := components.Empty_state().Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
+	}
+
+	return c.HTML(http.StatusCreated, sb.String())
+
 }

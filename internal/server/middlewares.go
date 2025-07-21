@@ -29,7 +29,7 @@ func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
 				}
 			} else {
 				// Create a new anonymous session
-				session, err = s.db.CreateSession(ctx, uuid.New().String())
+				session, err = s.db.CreateSession(ctx, uuid.New().String()) // TODO: get client defaults locale
 				if err != nil {
 					return c.String(http.StatusInternalServerError, "Couldn't create session")
 				}
