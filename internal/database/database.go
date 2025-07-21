@@ -34,6 +34,10 @@ type Service interface {
 	ListLinesByDirection(ctx context.Context, direction int) ([]store.Line, error)
 
 	GetStop(ctx context.Context, code string) (store.Stop, error)
+
+	ListStopsFromLine(ctx context.Context, id int) ([]store.Stop, error)
+
+	CreateDashboard(ctx context.Context, param store.CreatedashboardParams) (store.Dashboard, error)
 }
 
 type service struct {
@@ -151,4 +155,12 @@ func (s *service) GetStop(ctx context.Context, code string) (store.Stop, error) 
 
 func (s *service) UpdateLocale(ctx context.Context, param store.UpdateLocaleParams) error {
 	return s.queries.UpdateLocale(ctx, param)
+}
+
+func (s *service) ListStopsFromLine(ctx context.Context, id int) ([]store.Stop, error) {
+	return s.queries.ListStopsFromLine(ctx, int64(id))
+}
+
+func (s *service) CreateDashboard(ctx context.Context, param store.CreatedashboardParams) (store.Dashboard, error) {
+	return s.queries.Createdashboard(ctx, param)
 }

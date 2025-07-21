@@ -9,6 +9,9 @@ templ LinePicker(lines []store.LineWithFallback) {
 			for _, line := range lines {
 				<li>
 					<button
+						hx-get={ fmt.Sprintf("/stops/picker/%d", line.ID) }
+						hx-target="#box"
+						hx-swap="outerHTML"
 						class="text-white size-[40px] rounded grid place-items-center cursor-pointer font-semibold"
 						style={ fmt.Sprintf("background-color:%s", line.Color) }
 					>
@@ -18,12 +21,7 @@ templ LinePicker(lines []store.LineWithFallback) {
 			}
 		</ul>
 		<div class="w-full mt-4 flex justify-end">
-			<button
-				hx-get="/lines/empty_state"
-				hx-target="#box"
-				hx-swap="outerHTML"
-				class="bg-[#262624] hover:bg-[#383835] text-white cursor-pointer rounded-md px-4 py-2 self-center"
-			>Cancel</button>
+			@cancel_button()
 		</div>
 	</div>
 }

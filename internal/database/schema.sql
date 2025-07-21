@@ -32,3 +32,11 @@ CREATE TABLE stops_by_lines (
   CONSTRAINT fk_stop FOREIGN KEY (stop_id) REFERENCES stops(id),
   CONSTRAINT fk_line FOREIGN KEY (line_id) REFERENCES lines(id)
 );
+CREATE TABLE dashboards (
+  id integer primary key autoincrement not null,
+  session_id text not null,
+  stop_id integer not null,
+  created_at datetime default current_timestamp,
+  constraint fk_session foreign key (session_id) references sessions(id),
+  constraint fk_stop foreign key (stop_id) references stops(id)
+);
