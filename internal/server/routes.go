@@ -38,6 +38,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.GET("/lines/picker", s.LinesPickerHandler)
 	e.GET("/stops/picker/:lineId", s.StopsPickerHandler)
 
+	e.POST("/dashboards", s.CreateDashboardHandler)
+
 	return e
 }
 
@@ -158,4 +160,33 @@ func (s *Server) StopsPickerHandler(c echo.Context) error {
 	}
 
 	return c.HTML(http.StatusOK, sb.String())
+}
+
+func (s *Server) CreateDashboardHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	stopId, err := strconv.Atoi(c.FormValue("stop_id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid stop_id: must be an integer")
+	}
+
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	_, dbErr := s.db.CreateDashboard(ctx, store.CreatedashboardParams{
+		SessionID: session.ID,
+		StopID:    int64(stopId),
+	})
+	if dbErr != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't persist the dashboard")
+	}
+
+	var sb strings.Builder
+	if err := components.Empty_state().Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
+	}
+
+	return c.HTML(http.StatusCreated, sb.String())
+
 }

@@ -8,6 +8,13 @@ import (
 	"database/sql"
 )
 
+type Dashboard struct {
+	ID        int64
+	SessionID string
+	StopID    int64
+	CreatedAt sql.NullTime
+}
+
 type GooseDbVersion struct {
 	ID        int64
 	VersionID int64
