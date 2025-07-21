@@ -2,15 +2,25 @@ package components
 
 import (
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/button"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
 )
 
 templ StopPicker(stops []store.Stop) {
-	<div
-		class="w-48/100 min-w-xl aspect-video bg-white rounded-xl p-4 flex flex-col"
-		id="box"
-	>
-		<div class="overflow-y-auto flex-1">
+	@card.Card(
+		card.Props{
+			ID:    "box",
+			Class: "aspect-video flex flex-col",
+		}) {
+		@card.Header(card.HeaderProps{Class: "pb-2"}) {
+			@card.Title() {
+				Add a Stop to Your Dashboard
+			}
+			@card.Description() {
+				Pick any bus, tram, or metro stop to track live arrival times.
+			}
+		}
+		@card.Content(card.ContentProps{Class: "flex-1 overflow-y-auto"}) {
 			<form
 				class="grid grid-cols-2 gap-2"
 				id="stop-form"
@@ -38,8 +48,10 @@ templ StopPicker(stops []store.Stop) {
 					</label>
 				}
 			</form>
-		</div>
-		<div class="w-full mt-4 flex justify-end">
+		}
+		@card.Footer(card.FooterProps{
+			Class: "flex justify-end pt-2",
+		}) {
 			<div class="flex gap-2">
 				@button.Button(button.Props{
 					Variant: button.VariantGhost,
@@ -52,14 +64,14 @@ templ StopPicker(stops []store.Stop) {
 					Cancel
 				}
 				@button.Button(button.Props{
-					Type:    "submit",
+					Type: "submit",
 					Attributes: templ.Attributes{
-						"form":      "stop-form",
+						"form": "stop-form",
 					},
 				}) {
 					Save
 				}
 			</div>
-		</div>
-	</div>
+		}
+	}
 }
