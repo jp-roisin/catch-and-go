@@ -3,12 +3,25 @@ package components
 import (
 	"fmt"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/button"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
 )
 
 templ LinePicker(lines []store.LineWithFallback) {
-	<div class="w-48/100 min-w-xl aspect-video bg-white rounded-xl p-4 flex flex-col" id="box">
-		<div class="overflow-y-auto flex-1">
+	@card.Card(
+		card.Props{
+			ID:    "box",
+			Class: "aspect-video flex flex-col",
+		}) {
+		@card.Header(card.HeaderProps{Class: "pb-2"}) {
+			@card.Title() {
+				Pick a Line
+			}
+			@card.Description() {
+				Choose the line that includes the stop you want to follow in real time.
+			}
+		}
+		@card.Content(card.ContentProps{Class: "flex-1 overflow-y-auto"}) {
 			<ul class="flex flex-wrap gap-2">
 				for _, line := range lines {
 					<li>
@@ -24,8 +37,10 @@ templ LinePicker(lines []store.LineWithFallback) {
 					</li>
 				}
 			</ul>
-		</div>
-		<div class="w-full mt-4 flex justify-end">
+		}
+		@card.Footer(card.FooterProps{
+			Class: "flex justify-end pt-2",
+		}) {
 			@button.Button(button.Props{
 				Variant: button.VariantGhost,
 				Attributes: templ.Attributes{
@@ -36,6 +51,6 @@ templ LinePicker(lines []store.LineWithFallback) {
 			}) {
 				Cancel
 			}
-		</div>
-	</div>
+		}
+	}
 }
