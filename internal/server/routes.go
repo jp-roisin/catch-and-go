@@ -120,7 +120,7 @@ func (s *Server) LinesPickerHandler(c echo.Context) error {
 
 func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
 	var sb strings.Builder
-	if err := components.Empty_state().Render(c.Request().Context(), &sb); err != nil {
+	if err := components.EmptyState().Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
@@ -183,7 +183,7 @@ func (s *Server) CreateDashboardHandler(c echo.Context) error {
 	}
 
 	var sb strings.Builder
-	if err := components.Empty_state().Render(c.Request().Context(), &sb); err != nil {
+	if err := components.EmptyState().Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
