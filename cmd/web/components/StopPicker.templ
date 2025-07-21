@@ -1,13 +1,16 @@
 package components
 
-import "github.com/jp-roisin/catch-and-go/internal/database/store"
+import (
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/button"
+	"github.com/jp-roisin/catch-and-go/internal/database/store"
+)
 
 templ StopPicker(stops []store.Stop) {
 	<div
-		class="w-48/100 min-w-xl aspect-video bg-white rounded-xl p-4"
+		class="w-48/100 min-w-xl aspect-video bg-white rounded-xl p-4 flex flex-col"
 		id="box"
 	>
-		<div class="h-full overflow-y-auto">
+		<div class="overflow-y-auto flex-1">
 			<form
 				class="grid grid-cols-2 gap-2"
 				id="stop-form"
@@ -38,14 +41,24 @@ templ StopPicker(stops []store.Stop) {
 		</div>
 		<div class="w-full mt-4 flex justify-end">
 			<div class="flex gap-2">
-				@cancel_button()
-				<button
-					type="submit"
-					form="stop-form"
-					class="bg-[#262624] hover:bg-[#383835] text-white cursor-pointer rounded-md px-4 py-2 self-center"
-				>
+				@button.Button(button.Props{
+					Variant: button.VariantGhost,
+					Attributes: templ.Attributes{
+						"hx-get":    "/lines/empty_state",
+						"hx-target": "#box",
+						"hx-swap":   "outerHTML",
+					},
+				}) {
+					Cancel
+				}
+				@button.Button(button.Props{
+					Type:    "submit",
+					Attributes: templ.Attributes{
+						"form":      "stop-form",
+					},
+				}) {
 					Save
-				</button>
+				}
 			</div>
 		</div>
 	</div>
