@@ -2,6 +2,6 @@
   "componentsDir": "cmd/web/ui",
   "utilsDir": "cmd/web/utils",
   "moduleName": "github.com/jp-roisin/catch-and-go",
-  "jsDir": "cmd/web/js",
-  "jsPublicPath": "cmd/web/assets/js"
+  "jsDir": "cmd/web/assets/js",
+  "jsPublicPath": "/assets/js"
 }

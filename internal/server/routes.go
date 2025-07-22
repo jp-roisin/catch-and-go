@@ -30,6 +30,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	fileServer := http.FileServer(http.FS(web.Files))
 	e.GET("/assets/*", echo.WrapHandler(fileServer))
 
+	e.Static("/assets", "cmd/web/assets")
+
 	e.GET("/", s.BaseWebHandler)
 	e.GET("/health", s.healthHandler)
 	e.PUT("/locale", s.UpdateLocale)
