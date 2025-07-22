@@ -3,8 +3,21 @@ package components
 import (
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/button"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/radiocard"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
+	"strconv"
 )
+
+func getDefaultSelection(stops []store.Stop) int {
+	for i, s := range stops {
+		if s.ID != 1 {
+			return i
+		}
+	}
+
+	return 0 // TODO: validate stop.ID in the handler
+}
 
 templ StopPicker(stops []store.Stop) {
 	@card.Card(
@@ -29,23 +42,24 @@ templ StopPicker(stops []store.Stop) {
 				hx-swap="outerHTML"
 			>
 				for i, stop := range stops {
-					<label
-						for={ stop.ID }
-						class="bg-[#fafaf7] hover:bg-[#f6f5f1] p-2 flex items-center gap-2 rounded cursor-pointer"
-						if stop.ID == 1 {
-							style="background-color: #f6f5f1; cursor: not-allowed"
+					@radiocard.RadioCard(radiocard.Props{
+						ID:       strconv.FormatInt(int64(stop.ID), 10),
+						Name:     "stop_id",
+						Value:    strconv.FormatInt(int64(stop.ID), 10),
+						Disabled: stop.ID == 1,
+						Checked:  i == getDefaultSelection(stops),
+					}) {
+						@radiocard.Header() {
+							<div class="flex items-center gap-2">
+								if stop.ID == 1 {
+									@icon.TriangleAlert()
+								} else {
+									@icon.GitCommitVertical()
+								}
+								<span>{ stop.Name }</span>
+							</div>
 						}
-					>
-						<input
-							type="radio"
-							id={ stop.ID }
-							value={ stop.ID }
-							name="stop_id"
-							disabled?={ stop.ID == 1 }
-							checked?={ i == 0 }
-						/>
-						<span>{ stop.Name }</span>
-					</label>
+					}
 				}
 			</form>
 		}
