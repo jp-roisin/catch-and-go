@@ -1,0 +1,91 @@
+package components
+
+import (
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/button"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/radiocard"
+	"github.com/jp-roisin/catch-and-go/internal/database/store"
+	"strconv"
+)
+
+func getDefaultSelection(stops []store.Stop) int {
+	for i, s := range stops {
+		if s.ID != 1 {
+			return i
+		}
+	}
+
+	return 0 // TODO: validate stop.ID in the handler
+}
+
+templ StopPicker(stops []store.Stop) {
+	@card.Card(
+		card.Props{
+			ID:    "box",
+			Class: "aspect-video flex flex-col",
+		}) {
+		@card.Header(card.HeaderProps{Class: "pb-2"}) {
+			@card.Title() {
+				Add a Stop to Your Dashboard
+			}
+			@card.Description() {
+				Pick any bus, tram, or metro stop to track live arrival times.
+			}
+		}
+		@card.Content(card.ContentProps{Class: "flex-1 overflow-y-auto"}) {
+			<form
+				class="grid grid-cols-2 gap-2"
+				id="stop-form"
+				hx-post="/dashboards"
+				hx-target="#box"
+				hx-swap="outerHTML"
+			>
+				for i, stop := range stops {
+					@radiocard.RadioCard(radiocard.Props{
+						ID:       strconv.FormatInt(int64(stop.ID), 10),
+						Name:     "stop_id",
+						Value:    strconv.FormatInt(int64(stop.ID), 10),
+						Disabled: stop.ID == 1,
+						Checked:  i == getDefaultSelection(stops),
+					}) {
+						@radiocard.Header() {
+							<div class="flex items-center gap-2">
+								if stop.ID == 1 {
+									@icon.TriangleAlert()
+								} else {
+									@icon.GitCommitVertical()
+								}
+								<span>{ stop.Name }</span>
+							</div>
+						}
+					}
+				}
+			</form>
+		}
+		@card.Footer(card.FooterProps{
+			Class: "flex justify-end pt-2",
+		}) {
+			<div class="flex gap-2">
+				@button.Button(button.Props{
+					Variant: button.VariantGhost,
+					Attributes: templ.Attributes{
+						"hx-get":    "/lines/empty_state",
+						"hx-target": "#box",
+						"hx-swap":   "outerHTML",
+					},
+				}) {
+					Cancel
+				}
+				@button.Button(button.Props{
+					Type: "submit",
+					Attributes: templ.Attributes{
+						"form": "stop-form",
+					},
+				}) {
+					Save
+				}
+			</div>
+		}
+	}
+}

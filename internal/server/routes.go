@@ -30,9 +30,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 	fileServer := http.FileServer(http.FS(web.Files))
 	e.GET("/assets/*", echo.WrapHandler(fileServer))
 
+	e.Static("/assets", "cmd/web/assets")
+
 	e.GET("/", s.BaseWebHandler)
+	e.GET("/main", s.MainHandler)
 	e.GET("/health", s.healthHandler)
-	e.PUT("/locale", s.UpdateLocale)
+
+	e.PUT("/sessions/locale", s.UpdateLocaleHandler)
 
 	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
 	e.GET("/lines/picker", s.LinesPickerHandler)
@@ -55,12 +59,11 @@ func (s *Server) healthHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, s.db.Health())
 }
 
-func (s *Server) UpdateLocale(c echo.Context) error {
+func (s *Server) UpdateLocaleHandler(c echo.Context) error {
 	ctx := c.Request().Context()
-
-	locale := c.FormValue("locale")
-	if locale != "fr" && locale != "nl" {
-		return c.String(http.StatusBadRequest, "Invalid locale")
+	newLocale := c.FormValue("locale")
+	if newLocale != "fr" && newLocale != "nl" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Locale is not valid")
 	}
 
 	session, ok := c.Get("session").(*store.Session)
@@ -70,7 +73,7 @@ func (s *Server) UpdateLocale(c echo.Context) error {
 
 	param := store.UpdateLocaleParams{
 		ID:     session.ID,
-		Locale: locale,
+		Locale: newLocale,
 	}
 
 	err := s.db.UpdateLocale(ctx, param)
@@ -78,9 +81,23 @@ func (s *Server) UpdateLocale(c echo.Context) error {
 		return err
 	}
 
-	// Refresh the page to apply the new locale
-	c.Response().Header().Set("HX-Refresh", "true")
-	return c.JSON(http.StatusNoContent, nil)
+	component := components.Main()
+	renderingErr := component.Render(c.Request().Context(), c.Response())
+	if renderingErr != nil {
+		log.Printf("Error rendering in main content: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, renderingErr.Error())
+	}
+	return nil
+}
+
+func (s *Server) MainHandler(c echo.Context) error {
+	component := components.Main()
+	err := component.Render(c.Request().Context(), c.Response())
+	if err != nil {
+		log.Printf("Error rendering in main content: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return nil
 }
 
 func (s *Server) BaseWebHandler(c echo.Context) error {
@@ -120,7 +137,7 @@ func (s *Server) LinesPickerHandler(c echo.Context) error {
 
 func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
 	var sb strings.Builder
-	if err := components.Empty_state().Render(c.Request().Context(), &sb); err != nil {
+	if err := components.EmptyState().Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
@@ -183,7 +200,7 @@ func (s *Server) CreateDashboardHandler(c echo.Context) error {
 	}
 
 	var sb strings.Builder
-	if err := components.Empty_state().Render(c.Request().Context(), &sb); err != nil {
+	if err := components.EmptyState().Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
