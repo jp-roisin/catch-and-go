@@ -1,0 +1,20 @@
+package components
+
+templ EmptyState() {
+	<button
+		hx-get="/lines/picker"
+		hx-swap="outerHTML"
+		class="
+      aspect-video rounded-lg p-4 flex flex-col border
+      justify-center items-center cursor-pointer
+      hover:border-primary/50
+      text-card-foreground bg-card
+    "
+	>
+		<img src="/assets/images/empty_state.svg" alt="empty_state" class="mb-4"/>
+		<h3 class="text-lg leading-none font-semibold tracking-tight mb-2">Track a new stop</h3>
+		<p class="text-sm text-muted-foreground">
+			Your dashboard shows live data for the stops you care about. Add one now to get started.
+		</p>
+	</button>
+}
