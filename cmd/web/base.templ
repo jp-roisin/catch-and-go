@@ -4,6 +4,7 @@ import "github.com/jp-roisin/catch-and-go/cmd/web/components"
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/input"
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/label"
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/popover"
+import "github.com/jp-roisin/catch-and-go/cmd/web/ui/selectbox"
 
 templ Base(locale string) {
 	<!DOCTYPE html>
@@ -18,6 +19,7 @@ templ Base(locale string) {
 			<script src="assets/js/templui.js"></script>
 			@input.Script()
 			@label.Script()
+      @selectbox.Script()
 			@popover.Script()
 		</head>
 		<body>
