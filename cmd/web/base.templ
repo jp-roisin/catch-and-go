@@ -16,7 +16,7 @@ templ Base(locale string) {
 		</head>
 		<body>
 			@components.Header(locale)
-			<main class="h-[calc(100vh-80px)] px-6 py-4 bg-[#fafaf7]">
+			<main class="h-[calc(100vh-80px)] px-6 py-4 bg-[--background]">
 				<div class="grid gap-4 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3">
 					<div hx-get="/lines/empty_state" hx-trigger="load" hx-swap="outerHTML"></div>
 				</div>
