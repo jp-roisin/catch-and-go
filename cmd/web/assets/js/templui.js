@@ -1,4 +1,3 @@
-
 // Re-initialize templUI components after HTMX swaps
 document.body.addEventListener("htmx:afterSwap", (e) => {
   if (window.templUI) {
