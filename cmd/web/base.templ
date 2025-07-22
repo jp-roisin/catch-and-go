@@ -1,10 +1,10 @@
 package web
 
-import "github.com/jp-roisin/catch-and-go/cmd/web/components"
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/input"
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/label"
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/popover"
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/selectbox"
+import "github.com/jp-roisin/catch-and-go/cmd/web/components"
 
 templ Base(locale string) {
 	<!DOCTYPE html>
@@ -19,16 +19,12 @@ templ Base(locale string) {
 			<script src="assets/js/templui.js"></script>
 			@input.Script()
 			@label.Script()
-      @selectbox.Script()
+			@selectbox.Script()
 			@popover.Script()
 		</head>
 		<body>
-			@components.Header(locale)
-			<main class="h-[calc(100vh-80px)] px-6 py-4 bg-[--background]">
-				<div class="grid gap-4 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3">
-					<div hx-get="/lines/empty_state" hx-trigger="load" hx-swap="outerHTML"></div>
-				</div>
-			</main>
+      @components.Header(locale)
+			<main id="main" hx-get="/main" hx-trigger="load" hx-swap="outerHTML"></main>
 		</body>
 	</html>
 }
