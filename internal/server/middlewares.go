@@ -29,7 +29,7 @@ func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
 				}
 			} else {
 				// Create a new anonymous session
-				session, err = s.db.CreateSession(ctx, uuid.New().String()) // TODO: get client defaults locale
+				session, err = s.db.CreateSession(ctx, uuid.New().String()) // TODO: get client defaults
 				if err != nil {
 					return c.String(http.StatusInternalServerError, "Couldn't create session")
 				}
@@ -43,6 +43,7 @@ func (s *Server) AnonymousSessionMiddleware() echo.MiddlewareFunc {
 					SameSite: http.SameSiteStrictMode,
 					Expires:  time.Now().Add(365 * 24 * time.Hour),
 				})
+
 			}
 
 			c.Set("session", &session)

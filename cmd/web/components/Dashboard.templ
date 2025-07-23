@@ -1,0 +1,20 @@
+package components
+
+import (
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
+	"github.com/jp-roisin/catch-and-go/internal/database/store"
+)
+
+templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
+	for _, d := range dashbords {
+		@card.Card(card.Props{
+			Class: "aspect-video flex flex-col",
+		}) {
+			@card.Header() {
+				@card.Title() {
+					{ d.StopName }
+				}
+			}
+		}
+	}
+}
