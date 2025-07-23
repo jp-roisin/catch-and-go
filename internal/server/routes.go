@@ -10,6 +10,7 @@ import (
 	"github.com/jp-roisin/catch-and-go/cmd/web"
 	"github.com/jp-roisin/catch-and-go/cmd/web/components"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
+	"github.com/jp-roisin/catch-and-go/internal/externalapi"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -43,6 +44,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.GET("/stops/picker/:lineId", s.StopsPickerHandler)
 
 	e.GET("/dashboards", s.GetDashboardsHandler)
+	e.GET("/dashboards/:dashboardId", s.GetDashboardContentHandler)
 	e.POST("/dashboards", s.CreateDashboardHandler)
 	e.DELETE("/dashboards/:dashboardId", s.DeleteDashboardHandler)
 
@@ -261,4 +263,38 @@ func (s *Server) DeleteDashboardHandler(c echo.Context) error {
 	}
 
 	return c.Blob(http.StatusOK, "text/html", []byte(""))
+}
+
+func (s *Server) GetDashboardContentHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	param := c.Param("dashboardId")
+	dashboardId, err := strconv.Atoi(param)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid dashboardId: %q is not a number", dashboardId))
+	}
+
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	d, err := s.db.GetDashboardByIdWithStopInfo(ctx, store.GetDashboardByIdWithStopInfoParams{
+		ID:        int64(dashboardId),
+		SessionID: session.ID,
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the dashboard with stop info")
+	}
+
+	res, err := externalapi.GetWaitingTimeForStop(d.StopCode)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	var sb strings.Builder
+	if err := components.DashboardContent(res).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
+	}
+
+	return c.HTML(http.StatusCreated, sb.String())
 }
