@@ -64,7 +64,7 @@ func SeedStopsByLines(ctx context.Context, db *sql.DB, service database.Service)
 		}
 
 		for _, st := range ls {
-			stop, err := service.GetStop(ctx, st.Code)
+			stop, err := service.GetStop(ctx, removeTrailingLetter(st.Code))
 			if err != nil {
 				stop.ID = 1 // Fallback to the first row inserted in `stops` (see getUnknownStop())
 			}
