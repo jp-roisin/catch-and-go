@@ -47,11 +47,7 @@ templ DashboardContent(waitingTimes []externalapi.WaitingTime, line store.Line) 
 				<li class="my-4">
 					<div class="flex justify-between my-4">
 						<div class="flex gap-4 items-center">
-							if line.Mode.Valid {
-								<span>
-									{ line.Mode.String }
-								</span>
-							}
+							@LineMode(line.Mode)
 							<span
 								class="text-white size-[32px] rounded grid place-items-center font-semibold"
 								style={ fmt.Sprintf("background-color:%s", line.Color.String) }
