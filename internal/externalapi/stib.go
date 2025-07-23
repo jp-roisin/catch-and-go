@@ -30,15 +30,15 @@ func (p *PassingTimeList) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal([]byte(raw), (*[]PassingTime)(p))
 }
 
-type Result struct {
+type WaitingTime struct {
 	PointID      string          `json:"pointid"`
 	LineID       string          `json:"lineid"`
 	PassingTimes PassingTimeList `json:"passingtimes"`
 }
 
 type Response struct {
-	TotalCount int      `json:"total_count"`
-	Results    []Result `json:"results"`
+	TotalCount   int           `json:"total_count"`
+	WaitingTimes []WaitingTime `json:"results"`
 }
 
 const baseUrl = "https://data.stib-mivb.brussels/api/explore/v2.1/catalog/datasets/waiting-time-rt-production/records"

@@ -5,6 +5,7 @@ import (
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/button"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/separator"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
 	"github.com/jp-roisin/catch-and-go/internal/externalapi"
 )
@@ -39,20 +40,35 @@ templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
 	}
 }
 
-templ DashboardContent(data externalapi.Response) {
+templ DashboardContent(waitingTimes []externalapi.WaitingTime, line store.Line) {
 	<ul>
-		for _, d := range data.Results {
-			for _, t := range d.PassingTimes {
-				<li class="flex justify-between">
-					<div>
-						{ t.LineID }
+		for _, wt := range waitingTimes {
+			for i, t := range wt.PassingTimes {
+				<li class="my-4">
+					<div class="flex justify-between my-4">
+						<div class="flex gap-4 items-center">
+							if line.Mode.Valid {
+								<span>
+									{ line.Mode.String }
+								</span>
+							}
+							<span
+								class="text-white size-[32px] rounded grid place-items-center font-semibold"
+								style={ fmt.Sprintf("background-color:%s", line.Color.String) }
+							>
+								{ t.LineID }
+							</span>
+							<span>
+								{ t.Destination.FR }
+							</span>
+						</div>
+						<div>
+							{ t.ExpectedArrivalTime }
+						</div>
 					</div>
-					<div>
-						{ t.Destination.FR }
-					</div>
-					<div>
-						{ t.ExpectedArrivalTime }
-					</div>
+					if len(wt.PassingTimes) != i + 1 {
+						@separator.Separator()
+					}
 				</li>
 			}
 		}
