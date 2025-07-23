@@ -52,6 +52,78 @@ func (q *Queries) DeleteDashboard(ctx context.Context, arg DeleteDashboardParams
 	return err
 }
 
+const getDashboardById = `-- name: GetDashboardById :one
+SELECT id, session_id, stop_id, created_at FROM dashboards
+WHERE id = ? AND session_id = ?
+`
+
+type GetDashboardByIdParams struct {
+	ID        int64
+	SessionID string
+}
+
+func (q *Queries) GetDashboardById(ctx context.Context, arg GetDashboardByIdParams) (Dashboard, error) {
+	row := q.db.QueryRowContext(ctx, getDashboardById, arg.ID, arg.SessionID)
+	var i Dashboard
+	err := row.Scan(
+		&i.ID,
+		&i.SessionID,
+		&i.StopID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getDashboardByIdWithStopInfo = `-- name: GetDashboardByIdWithStopInfo :one
+SELECT
+  d.id AS dashboard_id,
+  d.session_id,
+  d.stop_id,
+  d.created_at AS dashboard_created_at,
+  s.id AS stop_id,
+  s.code AS stop_code,
+  s.geo AS stop_geo,
+  s.name AS stop_name,
+  s.created_at AS stop_created_at
+FROM dashboards d
+JOIN stops s ON s.id = d.stop_id
+WHERE d.id = ? AND d.session_id = ?
+`
+
+type GetDashboardByIdWithStopInfoParams struct {
+	ID        int64
+	SessionID string
+}
+
+type GetDashboardByIdWithStopInfoRow struct {
+	DashboardID        int64
+	SessionID          string
+	StopID             int64
+	DashboardCreatedAt sql.NullTime
+	StopID_2           int64
+	StopCode           string
+	StopGeo            string
+	StopName           string
+	StopCreatedAt      sql.NullTime
+}
+
+func (q *Queries) GetDashboardByIdWithStopInfo(ctx context.Context, arg GetDashboardByIdWithStopInfoParams) (GetDashboardByIdWithStopInfoRow, error) {
+	row := q.db.QueryRowContext(ctx, getDashboardByIdWithStopInfo, arg.ID, arg.SessionID)
+	var i GetDashboardByIdWithStopInfoRow
+	err := row.Scan(
+		&i.DashboardID,
+		&i.SessionID,
+		&i.StopID,
+		&i.DashboardCreatedAt,
+		&i.StopID_2,
+		&i.StopCode,
+		&i.StopGeo,
+		&i.StopName,
+		&i.StopCreatedAt,
+	)
+	return i, err
+}
+
 const listDashboardsFromSession = `-- name: ListDashboardsFromSession :many
 SELECT
   d.id AS dashboard_id,
