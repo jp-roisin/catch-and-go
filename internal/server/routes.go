@@ -42,6 +42,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.GET("/lines/picker", s.LinesPickerHandler)
 	e.GET("/stops/picker/:lineId", s.StopsPickerHandler)
 
+	e.GET("/dashboards", s.GetDashboardHandler)
 	e.POST("/dashboards", s.CreateDashboardHandler)
 
 	return e
@@ -200,10 +201,38 @@ func (s *Server) CreateDashboardHandler(c echo.Context) error {
 	}
 
 	var sb strings.Builder
-	if err := components.EmptyState().Render(c.Request().Context(), &sb); err != nil {
+	if err := components.Main().Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
 	return c.HTML(http.StatusCreated, sb.String())
-
 }
+
+func (s *Server) GetDashboardHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	dashboards, err := s.db.ListDashboardsFromSession(ctx, session.ID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the dashboard")
+	}
+
+	var translatedDashboards []store.ListDashboardsFromSessionRow
+	for _, d := range dashboards {
+		translatedDashboard, err := d.Translate(session.Locale)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Something is wrong about this stop info: %v", d.DashboardID))
+		}
+		translatedDashboards = append(translatedDashboards, translatedDashboard)
+
+	}
+
+	var sb strings.Builder
+	if err := components.Dashboard(translatedDashboards).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
+	}
+
+	return c.HTML(http.StatusCreated, sb.String()) }

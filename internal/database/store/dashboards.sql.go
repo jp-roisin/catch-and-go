@@ -7,6 +7,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createdashboard = `-- name: Createdashboard :one
@@ -34,4 +35,66 @@ func (q *Queries) Createdashboard(ctx context.Context, arg CreatedashboardParams
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const listDashboardsFromSession = `-- name: ListDashboardsFromSession :many
+SELECT
+  d.id AS dashboard_id,
+  d.session_id,
+  d.stop_id,
+  d.created_at AS dashboard_created_at,
+  s.id AS stop_id,
+  s.code AS stop_code,
+  s.geo AS stop_geo,
+  s.name AS stop_name,
+  s.created_at AS stop_created_at
+FROM dashboards d
+JOIN stops s ON s.id = d.stop_id
+WHERE d.session_id = ?
+ORDER BY s.created_at ASC
+`
+
+type ListDashboardsFromSessionRow struct {
+	DashboardID        int64
+	SessionID          string
+	StopID             int64
+	DashboardCreatedAt sql.NullTime
+	StopID_2           int64
+	StopCode           string
+	StopGeo            string
+	StopName           string
+	StopCreatedAt      sql.NullTime
+}
+
+func (q *Queries) ListDashboardsFromSession(ctx context.Context, sessionID string) ([]ListDashboardsFromSessionRow, error) {
+	rows, err := q.db.QueryContext(ctx, listDashboardsFromSession, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListDashboardsFromSessionRow
+	for rows.Next() {
+		var i ListDashboardsFromSessionRow
+		if err := rows.Scan(
+			&i.DashboardID,
+			&i.SessionID,
+			&i.StopID,
+			&i.DashboardCreatedAt,
+			&i.StopID_2,
+			&i.StopCode,
+			&i.StopGeo,
+			&i.StopName,
+			&i.StopCreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

@@ -38,6 +38,7 @@ type Service interface {
 	ListStopsFromLine(ctx context.Context, id int) ([]store.Stop, error)
 
 	CreateDashboard(ctx context.Context, param store.CreatedashboardParams) (store.Dashboard, error)
+	ListDashboardsFromSession(ctx context.Context, sessionID string) ([]store.ListDashboardsFromSessionRow, error)
 }
 
 type service struct {
@@ -163,4 +164,8 @@ func (s *service) ListStopsFromLine(ctx context.Context, id int) ([]store.Stop, 
 
 func (s *service) CreateDashboard(ctx context.Context, param store.CreatedashboardParams) (store.Dashboard, error) {
 	return s.queries.Createdashboard(ctx, param)
+}
+
+func (s *service) ListDashboardsFromSession(ctx context.Context, sessionID string) ([]store.ListDashboardsFromSessionRow, error) {
+	return s.queries.ListDashboardsFromSession(ctx, sessionID)
 }

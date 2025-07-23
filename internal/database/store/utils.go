@@ -79,3 +79,33 @@ func (s *Stop) Translate(locale string) (Stop, error) {
 		CreatedAt: s.CreatedAt,
 	}, nil
 }
+
+func (d *ListDashboardsFromSessionRow) Translate(locale string) (ListDashboardsFromSessionRow, error) {
+	if locale != "fr" && locale != "nl" {
+		return ListDashboardsFromSessionRow{}, fmt.Errorf("%s is not a valid locale", locale)
+	}
+	var obj i18n
+	if err := json.Unmarshal([]byte(d.StopName), &obj); err != nil {
+		return ListDashboardsFromSessionRow{}, err
+	}
+
+	var translatedName string
+	switch locale {
+	case "fr":
+		translatedName = obj.Fr
+	case "nl":
+		translatedName = obj.Nl
+	}
+
+	return ListDashboardsFromSessionRow{
+		DashboardID:        d.DashboardID,
+		SessionID:          d.SessionID,
+		StopID:             d.StopID,
+		DashboardCreatedAt: d.DashboardCreatedAt,
+		StopID_2:           d.StopID_2,
+		StopCode:           d.StopCode,
+		StopGeo:            d.StopGeo,
+		StopName:           translatedName,
+		StopCreatedAt:      d.StopCreatedAt,
+	}, nil
+}
