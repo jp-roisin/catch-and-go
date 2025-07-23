@@ -291,8 +291,17 @@ func (s *Server) GetDashboardContentHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
+	lineId := res.WaitingTimes[0].LineID
+	line, err := s.db.GetLine(ctx, store.GetLineParams{
+		Code:      lineId,
+		Direction: 0, // We're only looking for the metadata which are the same in both directions
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the line info")
+	}
+
 	var sb strings.Builder
-	if err := components.DashboardContent(res).Render(c.Request().Context(), &sb); err != nil {
+	if err := components.DashboardContent(res.WaitingTimes, line).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
