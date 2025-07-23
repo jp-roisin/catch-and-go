@@ -6,6 +6,7 @@ import (
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
+	"github.com/jp-roisin/catch-and-go/internal/externalapi"
 )
 
 templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
@@ -29,6 +30,31 @@ templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
 					@icon.X()
 				}
 			}
+			@card.Content(card.ContentProps{
+				Attributes: templ.Attributes{
+					"hx-get":     fmt.Sprintf("/dashboards/%d", d.DashboardID),
+					"hx-trigger": "load",
+				}})
 		}
 	}
+}
+
+templ DashboardContent(data externalapi.Response) {
+	<ul>
+		for _, d := range data.Results {
+			for _, t := range d.PassingTimes {
+				<li class="flex justify-between">
+					<div>
+						{ t.LineID }
+					</div>
+					<div>
+						{ t.Destination.FR }
+					</div>
+					<div>
+						{ t.ExpectedArrivalTime }
+					</div>
+				</li>
+			}
+		}
+	</ul>
 }
