@@ -37,6 +37,21 @@ func (q *Queries) Createdashboard(ctx context.Context, arg CreatedashboardParams
 	return i, err
 }
 
+const deleteDashboard = `-- name: DeleteDashboard :exec
+DELETE from dashboards
+WHERE id = ? AND session_id = ?
+`
+
+type DeleteDashboardParams struct {
+	ID        int64
+	SessionID string
+}
+
+func (q *Queries) DeleteDashboard(ctx context.Context, arg DeleteDashboardParams) error {
+	_, err := q.db.ExecContext(ctx, deleteDashboard, arg.ID, arg.SessionID)
+	return err
+}
+
 const listDashboardsFromSession = `-- name: ListDashboardsFromSession :many
 SELECT
   d.id AS dashboard_id,

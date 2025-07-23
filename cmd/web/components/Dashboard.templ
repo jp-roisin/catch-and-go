@@ -1,18 +1,32 @@
 package components
 
 import (
+	"fmt"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/button"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
 )
 
 templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
 	for _, d := range dashbords {
 		@card.Card(card.Props{
+			ID:    fmt.Sprintf("dashboard_%d", d.DashboardID),
 			Class: "aspect-video flex flex-col",
 		}) {
-			@card.Header() {
+			@card.Header(card.HeaderProps{Class: "flex flex-row items-center justify-between"}) {
 				@card.Title() {
 					{ d.StopName }
+				}
+				@button.Button(button.Props{Variant: button.VariantGhost,
+					Attributes: templ.Attributes{
+						"hx-delete":  fmt.Sprintf("/dashboards/%d", d.DashboardID),
+						"hx-trigger": "click",
+						"hx-swap":    "outerHTML",
+						"hx-target":  fmt.Sprintf("#dashboard_%d", d.DashboardID),
+					},
+				}) {
+					@icon.X()
 				}
 			}
 		}

@@ -42,8 +42,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.GET("/lines/picker", s.LinesPickerHandler)
 	e.GET("/stops/picker/:lineId", s.StopsPickerHandler)
 
-	e.GET("/dashboards", s.GetDashboardHandler)
+	e.GET("/dashboards", s.GetDashboardsHandler)
 	e.POST("/dashboards", s.CreateDashboardHandler)
+	e.DELETE("/dashboards/:dashboardId", s.DeleteDashboardHandler)
 
 	return e
 }
@@ -208,7 +209,7 @@ func (s *Server) CreateDashboardHandler(c echo.Context) error {
 	return c.HTML(http.StatusCreated, sb.String())
 }
 
-func (s *Server) GetDashboardHandler(c echo.Context) error {
+func (s *Server) GetDashboardsHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 	session, ok := c.Get("session").(*store.Session)
 	if !ok {
@@ -235,4 +236,29 @@ func (s *Server) GetDashboardHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
-	return c.HTML(http.StatusCreated, sb.String()) }
+	return c.HTML(http.StatusCreated, sb.String())
+}
+
+func (s *Server) DeleteDashboardHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	param := c.Param("dashboardId")
+	dashboardId, err := strconv.Atoi(param)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid dashboardId: %q is not a number", dashboardId))
+	}
+
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	err = s.db.DeleteDashboard(ctx, store.DeleteDashboardParams{
+		ID:        int64(dashboardId),
+		SessionID: session.ID,
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't delete the dashboard")
+	}
+
+	return c.Blob(http.StatusOK, "text/html", []byte(""))
+}
