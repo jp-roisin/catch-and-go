@@ -1,0 +1,20 @@
+package components
+
+import "database/sql"
+
+templ LineMode(mode sql.NullString) {
+	if mode.Valid {
+		<span class="bg-[#d44339] size-[32px] rounded-full text-white flex justify-center items-center">
+			switch mode.String {
+				case "tram":
+					T
+				case "bus":
+					B
+				case "metro":
+					M
+				default:
+					""
+			}
+		</span>
+	}
+}
