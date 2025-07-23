@@ -39,6 +39,7 @@ type Service interface {
 
 	CreateDashboard(ctx context.Context, param store.CreatedashboardParams) (store.Dashboard, error)
 	ListDashboardsFromSession(ctx context.Context, sessionID string) ([]store.ListDashboardsFromSessionRow, error)
+	DeleteDashboard(ctx context.Context, param store.DeleteDashboardParams) error
 }
 
 type service struct {
@@ -168,4 +169,8 @@ func (s *service) CreateDashboard(ctx context.Context, param store.Createdashboa
 
 func (s *service) ListDashboardsFromSession(ctx context.Context, sessionID string) ([]store.ListDashboardsFromSessionRow, error) {
 	return s.queries.ListDashboardsFromSession(ctx, sessionID)
+}
+
+func (s *service) DeleteDashboard(ctx context.Context, param store.DeleteDashboardParams) error {
+	return s.queries.DeleteDashboard(ctx, param)
 }

@@ -23,3 +23,7 @@ FROM dashboards d
 JOIN stops s ON s.id = d.stop_id
 WHERE d.session_id = ?
 ORDER BY s.created_at ASC;
+
+-- name: DeleteDashboard :exec
+DELETE from dashboards
+WHERE id = ? AND session_id = ?;
