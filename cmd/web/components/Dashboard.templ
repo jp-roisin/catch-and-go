@@ -6,6 +6,7 @@ import (
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/separator"
+	"github.com/jp-roisin/catch-and-go/cmd/web/utils"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
 	"github.com/jp-roisin/catch-and-go/internal/externalapi"
 )
@@ -58,9 +59,7 @@ templ DashboardContent(waitingTimes []externalapi.WaitingTime, line store.Line) 
 								{ t.Destination.FR }
 							</span>
 						</div>
-						<div>
-							{ t.ExpectedArrivalTime }
-						</div>
+						@MinutesUntil(utils.MinutesFromNow(t.ExpectedArrivalTime))
 					</div>
 					if len(wt.PassingTimes) != i + 1 {
 						@separator.Separator()

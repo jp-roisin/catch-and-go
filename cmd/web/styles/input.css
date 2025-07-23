@@ -140,3 +140,18 @@
       "calt" 1;
   }
 }
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: linear;
+  }
+  50% {
+    transform: translateY(-25%);
+    animation-timing-function: linear;
+  }
+}
+
+.bounce {
+  animation: bounce 2s linear infinite;
+}
