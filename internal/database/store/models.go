@@ -36,6 +36,7 @@ type Session struct {
 	ID        string
 	CreatedAt sql.NullTime
 	Locale    string
+	Theme     string
 }
 
 type SqliteSequence struct {

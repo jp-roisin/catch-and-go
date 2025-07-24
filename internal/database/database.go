@@ -28,6 +28,7 @@ type Service interface {
 	GetSession(ctx context.Context, token string) (store.Session, error)
 	CreateSession(ctx context.Context, token string) (store.Session, error)
 	UpdateLocale(ctx context.Context, param store.UpdateLocaleParams) error
+	UpdateTheme(ctx context.Context, param store.UpdateThemeParams) error
 
 	GetLine(ctx context.Context, param store.GetLineParams) (store.Line, error)
 	ListLines(ctx context.Context) ([]store.Line, error)
@@ -159,6 +160,10 @@ func (s *service) GetStop(ctx context.Context, code string) (store.Stop, error) 
 
 func (s *service) UpdateLocale(ctx context.Context, param store.UpdateLocaleParams) error {
 	return s.queries.UpdateLocale(ctx, param)
+}
+
+func (s *service) UpdateTheme(ctx context.Context, param store.UpdateThemeParams) error {
+	return s.queries.UpdateTheme(ctx, param)
 }
 
 func (s *service) ListStopsFromLine(ctx context.Context, id int) ([]store.Stop, error) {

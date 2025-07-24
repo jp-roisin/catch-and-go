@@ -37,7 +37,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.GET("/main", s.MainHandler)
 	e.GET("/health", s.healthHandler)
 
+	e.GET("/sessions", s.GetSessionHandler)
 	e.PUT("/sessions/locale", s.UpdateLocaleHandler)
+	e.PUT("/sessions/theme", s.UpdateThemeHandler)
 
 	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
 	e.GET("/lines/picker", s.LinesPickerHandler)
@@ -61,6 +63,20 @@ func (s *Server) HelloWorldHandler(c echo.Context) error {
 
 func (s *Server) healthHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, s.db.Health())
+}
+
+func (s *Server) GetSessionHandler(c echo.Context) error {
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	var sb strings.Builder
+	if err := components.Header(session).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the line pickers failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
 }
 
 func (s *Server) UpdateLocaleHandler(c echo.Context) error {
@@ -94,6 +110,36 @@ func (s *Server) UpdateLocaleHandler(c echo.Context) error {
 	return nil
 }
 
+func (s *Server) UpdateThemeHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	newTheme := c.FormValue("theme")
+	if newTheme != "light" && newTheme != "dark" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Theme is not valid")
+	}
+
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	param := store.UpdateThemeParams{
+		ID:    session.ID,
+		Theme: newTheme,
+	}
+
+	err := s.db.UpdateTheme(ctx, param)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	var sb strings.Builder
+	if err := components.ThemeSwitch(param.Theme).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the ThemeSwitch failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
+}
+
 func (s *Server) MainHandler(c echo.Context) error {
 	component := components.Main()
 	err := component.Render(c.Request().Context(), c.Response())
@@ -110,7 +156,7 @@ func (s *Server) BaseWebHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
 	}
 
-	component := web.Base(session.Locale)
+	component := web.Base(session.Theme)
 	err := component.Render(c.Request().Context(), c.Response())
 	if err != nil {
 		log.Printf("Error rendering in BaseWebHandler: %v", err)
@@ -140,8 +186,13 @@ func (s *Server) LinesPickerHandler(c echo.Context) error {
 }
 
 func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
 	var sb strings.Builder
-	if err := components.EmptyState().Render(c.Request().Context(), &sb); err != nil {
+	if err := components.EmptyState(session.Theme).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 

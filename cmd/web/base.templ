@@ -1,12 +1,13 @@
 package web
 
-import "github.com/jp-roisin/catch-and-go/cmd/web/ui/input"
-import "github.com/jp-roisin/catch-and-go/cmd/web/ui/label"
-import "github.com/jp-roisin/catch-and-go/cmd/web/ui/popover"
-import "github.com/jp-roisin/catch-and-go/cmd/web/ui/selectbox"
-import "github.com/jp-roisin/catch-and-go/cmd/web/components"
+import (
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/input"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/label"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/popover"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/selectbox"
+)
 
-templ Base(locale string) {
+templ Base(theme string) {
 	<!DOCTYPE html>
 	<html lang="en" class="h-screen light">
 		<head>
@@ -17,13 +18,15 @@ templ Base(locale string) {
 			<link rel="icon" type="image/x-icon" href="assets/images/stib.png"/>
 			<script src="assets/js/htmx.min.js"></script>
 			<script src="assets/js/templui.js"></script>
+			<script src="assets/js/theme.js"></script>
+			<script>jsThemeHandler({{ theme }})</script>
 			@input.Script()
 			@label.Script()
 			@selectbox.Script()
 			@popover.Script()
 		</head>
 		<body>
-      @components.Header(locale)
+			<header hx-get="/sessions" hx-trigger="load" hx-swap="outerHTML"></header>
 			<main id="main" hx-get="/main" hx-trigger="load" hx-swap="outerHTML"></main>
 		</body>
 	</html>

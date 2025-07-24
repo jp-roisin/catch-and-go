@@ -22,3 +22,8 @@ WHERE id = ?;
 UPDATE sessions
 set locale = ?
 WHERE id = ?;
+
+-- name: UpdateTheme :exec
+UPDATE sessions
+set theme = ?
+WHERE id = ?;
