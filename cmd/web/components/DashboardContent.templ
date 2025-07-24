@@ -1,17 +1,22 @@
 package components
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/separator"
 	"github.com/jp-roisin/catch-and-go/cmd/web/utils"
-	"github.com/jp-roisin/catch-and-go/internal/database/store"
 	"github.com/jp-roisin/catch-and-go/internal/externalapi"
 )
 
+type LineMetadata struct {
+	Mode  sql.NullString
+	Color sql.NullString
+}
+
 type DashboardContentProps struct {
-	WaitingTimes []externalapi.WaitingTime
-	Line         store.Line
-	Locale       string
+	WaitingTimes     []externalapi.WaitingTime
+	LineMetadataById map[string]LineMetadata
+	Locale           string
 }
 
 templ DashboardContent(props DashboardContentProps) {
@@ -21,10 +26,10 @@ templ DashboardContent(props DashboardContentProps) {
 				<li class="my-4">
 					<div class="flex justify-between my-4">
 						<div class="flex gap-4 items-center">
-							@LineMode(props.Line.Mode)
+							@LineMode(props.LineMetadataById[wt.LineID].Mode)
 							<span
 								class="text-white size-[32px] rounded grid place-items-center font-semibold"
-								style={ fmt.Sprintf("background-color:%s", props.Line.Color.String) }
+								style={ fmt.Sprintf("background-color:%s", props.LineMetadataById[wt.LineID].Color.String) }
 							>
 								{ t.LineID }
 							</span>

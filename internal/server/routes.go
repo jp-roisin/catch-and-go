@@ -342,20 +342,28 @@ func (s *Server) GetDashboardContentHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	lineId := res.WaitingTimes[0].LineID
-	line, err := s.db.GetLine(ctx, store.GetLineParams{
-		Code:      lineId,
-		Direction: 0, // We're only looking for the metadata which are the same in both directions
-	})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the line info")
+	lineMetadataById := make(map[string]components.LineMetadata)
+
+	for _, wt := range res.WaitingTimes {
+		line, err := s.db.GetLine(ctx, store.GetLineParams{
+			Code:      wt.LineID,
+			Direction: 0, // We're only looking for the metadata which are the same in both directions
+		})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the line info")
+		}
+
+		lineMetadataById[line.Code] = components.LineMetadata{
+			Mode:  line.Mode,
+			Color: line.Color,
+		}
 	}
 
 	var sb strings.Builder
 	if err := components.DashboardContent(components.DashboardContentProps{
-		WaitingTimes: res.WaitingTimes,
-		Line:         line,
-		Locale:       session.Locale,
+		WaitingTimes:     res.WaitingTimes,
+		LineMetadataById: lineMetadataById,
+		Locale:           session.Locale,
 	}).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
