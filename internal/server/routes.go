@@ -178,6 +178,25 @@ func (s *Server) LinesPickerHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the lines info")
 	}
 
+	// Even though the DB query orders the results by the 'code' column in ASC order,
+	// we need to sort them again here manually because 'code' column is a string.
+	// As a result, "11" would come before "2" (string comparison), which is incorrect for numeric ordering.
+	//
+	// We keep 'code' as a string for now because we might allow special or momentary line codes later,
+	// like "T92", which wouldn't work with a numeric column.
+	sort.Slice(linesWithFallback, func(i, j int) bool {
+		i, err = strconv.Atoi(linesWithFallback[i].Code)
+		if err != nil {
+			return false
+		}
+		j, err = strconv.Atoi(linesWithFallback[j].Code)
+		if err != nil {
+			return false
+		}
+
+		return i < j
+	})
+
 	var sb strings.Builder
 	if err := components.LinePicker(linesWithFallback).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the line pickers failed")
