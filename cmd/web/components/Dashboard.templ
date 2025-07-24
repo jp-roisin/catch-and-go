@@ -38,18 +38,20 @@ templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
 					hx-swap="outerHTML"
 					hx-indicator="#content-skeleton"
 				></div>
-				@DashboarContentSkeleton()
+				@DashboarContentSkeleton(4)
 			}
 		}
 	}
 }
 
-templ DashboarContentSkeleton() {
+templ DashboarContentSkeleton(count int) {
 	<ul id="content-skeleton" class="htmx-indicator">
-		<li>
-			@skeleton.Skeleton(skeleton.Props{Class: "h-8 w-full my-4"})
-			@separator.Separator()
-		</li>
+		for range count - 1 {
+			<li>
+				@skeleton.Skeleton(skeleton.Props{Class: "h-8 w-full my-4"})
+				@separator.Separator()
+			</li>
+		}
 		<li>
 			@skeleton.Skeleton(skeleton.Props{Class: "h-8 w-full my-4"})
 		</li>
