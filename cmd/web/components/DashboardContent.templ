@@ -8,22 +8,32 @@ import (
 	"github.com/jp-roisin/catch-and-go/internal/externalapi"
 )
 
-templ DashboardContent(waitingTimes []externalapi.WaitingTime, line store.Line) {
+type DashboardContentProps struct {
+	WaitingTimes []externalapi.WaitingTime
+	Line         store.Line
+	Locale       string
+}
+
+templ DashboardContent(props DashboardContentProps) {
 	<ul>
-		for _, wt := range waitingTimes {
+		for _, wt := range props.WaitingTimes {
 			for i, t := range wt.PassingTimes {
 				<li class="my-4">
 					<div class="flex justify-between my-4">
 						<div class="flex gap-4 items-center">
-							@LineMode(line.Mode)
+							@LineMode(props.Line.Mode)
 							<span
 								class="text-white size-[32px] rounded grid place-items-center font-semibold"
-								style={ fmt.Sprintf("background-color:%s", line.Color.String) }
+								style={ fmt.Sprintf("background-color:%s", props.Line.Color.String) }
 							>
 								{ t.LineID }
 							</span>
 							<span>
-								{ t.Destination.FR }
+								if props.Locale == "fr" {
+									{ t.Destination.FR }
+								} else {
+									{ t.Destination.NL }
+								}
 							</span>
 						</div>
 						@MinutesUntil(utils.MinutesFromNow(t.ExpectedArrivalTime))

@@ -301,7 +301,11 @@ func (s *Server) GetDashboardContentHandler(c echo.Context) error {
 	}
 
 	var sb strings.Builder
-	if err := components.DashboardContent(res.WaitingTimes, line).Render(c.Request().Context(), &sb); err != nil {
+	if err := components.DashboardContent(components.DashboardContentProps{
+		WaitingTimes: res.WaitingTimes,
+		Line:         line,
+		Locale:       session.Locale,
+	}).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
