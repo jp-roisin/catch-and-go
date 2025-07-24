@@ -1,6 +1,6 @@
 package components
 
-templ EmptyState() {
+templ EmptyState(theme string) {
 	<button
 		hx-get="/lines/picker"
 		hx-swap="outerHTML"
@@ -11,7 +11,15 @@ templ EmptyState() {
       text-card-foreground bg-card
     "
 	>
-		<img src="/assets/images/empty_state.svg" alt="empty_state" class="mb-4"/>
+		<img
+			if theme == "light" {
+				src="/assets/images/empty_state_light.svg"
+			} else {
+				src="/assets/images/empty_state_dark.svg"
+			}
+			alt="empty_state"
+			class="mb-4"
+		/>
 		<h3 class="text-lg leading-none font-semibold tracking-tight mb-2">Track a new stop</h3>
 		<p class="text-sm text-muted-foreground">
 			Your dashboard shows live data for the stops you care about. Add one now to get started.

@@ -186,8 +186,13 @@ func (s *Server) LinesPickerHandler(c echo.Context) error {
 }
 
 func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
 	var sb strings.Builder
-	if err := components.EmptyState().Render(c.Request().Context(), &sb); err != nil {
+	if err := components.EmptyState(session.Theme).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
 	}
 
