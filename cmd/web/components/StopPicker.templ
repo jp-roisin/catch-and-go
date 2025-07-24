@@ -38,7 +38,7 @@ templ StopPicker(stops []store.Stop) {
 				class="grid grid-cols-2 gap-2"
 				id="stop-form"
 				hx-post="/dashboards"
-				hx-target="#box"
+				hx-target="#main"
 				hx-swap="outerHTML"
 			>
 				for i, stop := range stops {

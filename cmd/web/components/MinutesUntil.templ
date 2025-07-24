@@ -1,0 +1,15 @@
+package components
+
+import "fmt"
+import "github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
+
+templ MinutesUntil(min int) {
+	if min == 0 {
+		<span class="flex items-center">
+			@icon.MoveDown(icon.Props{Class: "bounce mr-[-10px]"})
+			@icon.MoveDown(icon.Props{Class: "bounce"})
+		</span>
+	} else {
+		<span>{ fmt.Sprintf("%d min.", min) }</span>
+	}
+}

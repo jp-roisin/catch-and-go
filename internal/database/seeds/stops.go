@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 const stopDetailsFilePath = "internal/database/seeds/data/stop-details-production.csv"
@@ -63,6 +64,12 @@ func SeedStops(ctx context.Context, db *sql.DB) error {
 			return fmt.Errorf("invalid JSON in 'location' at row %d: %v", i+1, err)
 		}
 
+		// TODO: migrate the db to make the column int64
+		codeInt, err := strconv.Atoi(removeTrailingLetter(code))
+		if err != nil {
+			return fmt.Errorf("invalid code at row %d: %s (must be valid integer)", i+1, code)
+		}
+
 		if !validString.MatchString(code) {
 			return fmt.Errorf("invalid stop ID at row %d: %q (must be alphanumeric)", i+1, code)
 		}
@@ -72,7 +79,7 @@ func SeedStops(ctx context.Context, db *sql.DB) error {
 			return fmt.Errorf("invalid JSON in 'name' at row %d: %v", i+1, err)
 		}
 
-		_, err = stmt.ExecContext(ctx, code, location, name)
+		_, err = stmt.ExecContext(ctx, codeInt, location, name)
 		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to insert row %d: %v", i+1, err)

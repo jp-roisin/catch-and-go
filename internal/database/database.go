@@ -38,6 +38,10 @@ type Service interface {
 	ListStopsFromLine(ctx context.Context, id int) ([]store.Stop, error)
 
 	CreateDashboard(ctx context.Context, param store.CreatedashboardParams) (store.Dashboard, error)
+	ListDashboardsFromSession(ctx context.Context, sessionID string) ([]store.ListDashboardsFromSessionRow, error)
+	DeleteDashboard(ctx context.Context, param store.DeleteDashboardParams) error
+	GetDashboardById(ctx context.Context, param store.GetDashboardByIdParams) (store.Dashboard, error)
+	GetDashboardByIdWithStopInfo(ctx context.Context, param store.GetDashboardByIdWithStopInfoParams) (store.GetDashboardByIdWithStopInfoRow, error)
 }
 
 type service struct {
@@ -163,4 +167,20 @@ func (s *service) ListStopsFromLine(ctx context.Context, id int) ([]store.Stop, 
 
 func (s *service) CreateDashboard(ctx context.Context, param store.CreatedashboardParams) (store.Dashboard, error) {
 	return s.queries.Createdashboard(ctx, param)
+}
+
+func (s *service) ListDashboardsFromSession(ctx context.Context, sessionID string) ([]store.ListDashboardsFromSessionRow, error) {
+	return s.queries.ListDashboardsFromSession(ctx, sessionID)
+}
+
+func (s *service) DeleteDashboard(ctx context.Context, param store.DeleteDashboardParams) error {
+	return s.queries.DeleteDashboard(ctx, param)
+}
+
+func (s *service) GetDashboardById(ctx context.Context, param store.GetDashboardByIdParams) (store.Dashboard, error) {
+	return s.queries.GetDashboardById(ctx, param)
+}
+
+func (s *service) GetDashboardByIdWithStopInfo(ctx context.Context, param store.GetDashboardByIdWithStopInfoParams) (store.GetDashboardByIdWithStopInfoRow, error) {
+	return s.queries.GetDashboardByIdWithStopInfo(ctx, param)
 }
