@@ -4,50 +4,49 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/separator"
-	"github.com/jp-roisin/catch-and-go/cmd/web/utils"
 	"github.com/jp-roisin/catch-and-go/internal/externalapi"
 )
 
-type LineMetadata struct {
-	Mode  sql.NullString
-	Color sql.NullString
+type PassingTime struct {
+	LineCode            string
+	Color               sql.NullString
+	Mode                sql.NullString
+	Destination         externalapi.I18n
+	ExpectedArrivalTime int
 }
 
 type DashboardContentProps struct {
-	WaitingTimes     []externalapi.WaitingTime
-	LineMetadataById map[string]LineMetadata
-	Locale           string
+	PassingTimes []PassingTime
+	Locale       string
 }
 
 templ DashboardContent(props DashboardContentProps) {
 	<ul>
-		for i, wt := range props.WaitingTimes {
-			for j, t := range wt.PassingTimes {
-				<li class="my-4">
-					<div class="flex justify-between my-4">
-						<div class="flex gap-4 items-center">
-							@LineMode(props.LineMetadataById[wt.LineID].Mode)
-							<span
-								class="text-white size-[32px] rounded grid place-items-center font-semibold"
-								style={ fmt.Sprintf("background-color:%s", props.LineMetadataById[wt.LineID].Color.String) }
-							>
-								{ t.LineID }
-							</span>
-							<span>
-								if props.Locale == "fr" {
-									{ t.Destination.FR }
-								} else {
-									{ t.Destination.NL }
-								}
-							</span>
-						</div>
-						@MinutesUntil(utils.MinutesFromNow(t.ExpectedArrivalTime))
+		for i, pt := range props.PassingTimes {
+			<li class="my-4">
+				<div class="flex justify-between my-4">
+					<div class="flex gap-4 items-center">
+						@LineMode(pt.Mode)
+						<span
+							class="text-white size-[32px] rounded grid place-items-center font-semibold"
+							style={ fmt.Sprintf("background-color:%s", pt.Color.String) }
+						>
+							{ pt.LineCode }
+						</span>
+						<span>
+							if props.Locale == "fr" {
+								{ pt.Destination.FR }
+							} else {
+								{ pt.Destination.NL }
+							}
+						</span>
 					</div>
-					if (len(props.WaitingTimes) != i + 1) || (len(wt.PassingTimes) != j + 1) {
-						@separator.Separator()
-					}
-				</li>
-			}
+					@MinutesUntil(pt.ExpectedArrivalTime)
+				</div>
+				if (len(props.PassingTimes) != i + 1) {
+					@separator.Separator()
+				}
+			</li>
 		}
 	</ul>
 }
