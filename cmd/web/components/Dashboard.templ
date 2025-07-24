@@ -7,9 +7,7 @@ import (
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/separator"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/skeleton"
-	"github.com/jp-roisin/catch-and-go/cmd/web/utils"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
-	"github.com/jp-roisin/catch-and-go/internal/externalapi"
 )
 
 templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
@@ -40,45 +38,20 @@ templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
 					hx-swap="outerHTML"
 					hx-indicator="#content-skeleton"
 				></div>
-				<ul id="content-skeleton" class="htmx-indicator">
-					<li>
-						@skeleton.Skeleton(skeleton.Props{Class: "h-8 w-full my-4"})
-						@separator.Separator()
-					</li>
-					<li>
-						@skeleton.Skeleton(skeleton.Props{Class: "h-8 w-full my-4"})
-					</li>
-				</ul>
+				@DashboarContentSkeleton()
 			}
 		}
 	}
 }
 
-templ DashboardContent(waitingTimes []externalapi.WaitingTime, line store.Line) {
-	<ul>
-		for _, wt := range waitingTimes {
-			for i, t := range wt.PassingTimes {
-				<li class="my-4">
-					<div class="flex justify-between my-4">
-						<div class="flex gap-4 items-center">
-							@LineMode(line.Mode)
-							<span
-								class="text-white size-[32px] rounded grid place-items-center font-semibold"
-								style={ fmt.Sprintf("background-color:%s", line.Color.String) }
-							>
-								{ t.LineID }
-							</span>
-							<span>
-								{ t.Destination.FR }
-							</span>
-						</div>
-						@MinutesUntil(utils.MinutesFromNow(t.ExpectedArrivalTime))
-					</div>
-					if len(wt.PassingTimes) != i + 1 {
-						@separator.Separator()
-					}
-				</li>
-			}
-		}
+templ DashboarContentSkeleton() {
+	<ul id="content-skeleton" class="htmx-indicator">
+		<li>
+			@skeleton.Skeleton(skeleton.Props{Class: "h-8 w-full my-4"})
+			@separator.Separator()
+		</li>
+		<li>
+			@skeleton.Skeleton(skeleton.Props{Class: "h-8 w-full my-4"})
+		</li>
 	</ul>
 }
