@@ -31,7 +31,7 @@ templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
 					@icon.X()
 				}
 			}
-			@card.Content() {
+			@card.Content(card.ContentProps{Class: "flex-1 overflow-y-auto"}) {
 				<div
 					hx-get={ fmt.Sprintf("/dashboards/%d", d.DashboardID) }
 					hx-trigger="load"
