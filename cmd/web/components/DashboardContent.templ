@@ -21,8 +21,8 @@ type DashboardContentProps struct {
 
 templ DashboardContent(props DashboardContentProps) {
 	<ul>
-		for _, wt := range props.WaitingTimes {
-			for i, t := range wt.PassingTimes {
+		for i, wt := range props.WaitingTimes {
+			for j, t := range wt.PassingTimes {
 				<li class="my-4">
 					<div class="flex justify-between my-4">
 						<div class="flex gap-4 items-center">
@@ -43,7 +43,7 @@ templ DashboardContent(props DashboardContentProps) {
 						</div>
 						@MinutesUntil(utils.MinutesFromNow(t.ExpectedArrivalTime))
 					</div>
-					if len(wt.PassingTimes) != i + 1 {
+					if (len(props.WaitingTimes) != i + 1) || (len(wt.PassingTimes) != j + 1) {
 						@separator.Separator()
 					}
 				</li>
