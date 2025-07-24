@@ -15,13 +15,18 @@ INSERT INTO sessions (
 ) VALUES (
     ?
 )
-RETURNING id, created_at, locale
+RETURNING id, created_at, locale, theme
 `
 
 func (q *Queries) CreateSession(ctx context.Context, id string) (Session, error) {
 	row := q.db.QueryRowContext(ctx, createSession, id)
 	var i Session
-	err := row.Scan(&i.ID, &i.CreatedAt, &i.Locale)
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.Locale,
+		&i.Theme,
+	)
 	return i, err
 }
 
@@ -36,19 +41,24 @@ func (q *Queries) DeleteSession(ctx context.Context, id string) error {
 }
 
 const getSession = `-- name: GetSession :one
-SELECT id, created_at, locale FROM sessions
+SELECT id, created_at, locale, theme FROM sessions
 WHERE id = ? LIMIT 1
 `
 
 func (q *Queries) GetSession(ctx context.Context, id string) (Session, error) {
 	row := q.db.QueryRowContext(ctx, getSession, id)
 	var i Session
-	err := row.Scan(&i.ID, &i.CreatedAt, &i.Locale)
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.Locale,
+		&i.Theme,
+	)
 	return i, err
 }
 
 const listSessions = `-- name: ListSessions :many
-SELECT id, created_at, locale FROM sessions
+SELECT id, created_at, locale, theme FROM sessions
 ORDER BY created_at DESC
 `
 
@@ -61,7 +71,12 @@ func (q *Queries) ListSessions(ctx context.Context) ([]Session, error) {
 	var items []Session
 	for rows.Next() {
 		var i Session
-		if err := rows.Scan(&i.ID, &i.CreatedAt, &i.Locale); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.Locale,
+			&i.Theme,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -88,5 +103,21 @@ type UpdateLocaleParams struct {
 
 func (q *Queries) UpdateLocale(ctx context.Context, arg UpdateLocaleParams) error {
 	_, err := q.db.ExecContext(ctx, updateLocale, arg.Locale, arg.ID)
+	return err
+}
+
+const updateTheme = `-- name: UpdateTheme :exec
+UPDATE sessions
+set theme = ?
+WHERE id = ?
+`
+
+type UpdateThemeParams struct {
+	Theme string
+	ID    string
+}
+
+func (q *Queries) UpdateTheme(ctx context.Context, arg UpdateThemeParams) error {
+	_, err := q.db.ExecContext(ctx, updateTheme, arg.Theme, arg.ID)
 	return err
 }

@@ -16,13 +16,14 @@ templ Base() {
 			<link rel="icon" type="image/x-icon" href="assets/images/stib.png"/>
 			<script src="assets/js/htmx.min.js"></script>
 			<script src="assets/js/templui.js"></script>
+			<script src="assets/js/theme.js"></script>
 			@input.Script()
 			@label.Script()
 			@selectbox.Script()
 			@popover.Script()
 		</head>
 		<body>
-			<header id="main" hx-get="/sessions" hx-trigger="load" hx-swap="outerHTML"></header>
+			<header hx-get="/sessions" hx-trigger="load" hx-swap="outerHTML"></header>
 			<main id="main" hx-get="/main" hx-trigger="load" hx-swap="outerHTML"></main>
 		</body>
 	</html>
