@@ -10,11 +10,13 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
+type I18n struct {
+	FR string `json:"fr"`
+	NL string `json:"nl"`
+}
+
 type PassingTime struct {
-	Destination struct {
-		FR string `json:"fr"`
-		NL string `json:"nl"`
-	} `json:"destination"`
+	Destination         I18n   `json:"destination"`
 	ExpectedArrivalTime string `json:"expectedArrivalTime"`
 	LineID              string `json:"lineId"`
 }

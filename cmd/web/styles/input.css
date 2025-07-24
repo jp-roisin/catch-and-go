@@ -155,3 +155,15 @@
 .bounce {
   animation: bounce 2s linear infinite;
 }
+
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: block;
+}
+
+.htmx-request.htmx-indicator {
+    display: block;
+}
