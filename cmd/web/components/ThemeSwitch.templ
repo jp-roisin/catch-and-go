@@ -1,0 +1,27 @@
+package components
+
+import "github.com/jp-roisin/catch-and-go/cmd/web/ui/button"
+import "github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
+import "fmt"
+
+func getNewTheme(theme string) string {
+	if theme == "dark" {
+		return "light"
+	}
+	return "dark"
+}
+
+templ ThemeSwitch(theme string) {
+	@button.Button(button.Props{
+		Variant: button.VariantGhost,
+		Size:    button.SizeIcon,
+		Attributes: templ.Attributes{
+			"hx-put":      "/sessions/theme",
+			"hx-vals":     fmt.Sprintf(`{"theme": "%s"}`, getNewTheme(theme)),
+			"hx-target":   "this",
+			"hx-swap":     "outerHTML",
+			"hx-on:click": fmt.Sprintf("jsThemeHandler('%s')", getNewTheme(theme)),
+		}}) {
+		@icon.SunMoon(icon.Props{Class: "size-6"})
+	}
+}
