@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"unicode"
 
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
 )
@@ -89,3 +90,18 @@ func getUnknownStop() (store.Stop, error) {
 		Name: string(unknownName),
 	}, nil
 }
+
+// removeTrailingLetter removes the last character from the input string
+// if it is a Unicode letter. Otherwise, it returns the string unchanged.
+func removeTrailingLetter(code string) string {
+	if len(code) == 0 {
+		return code
+	}
+
+	lastRune := rune(code[len(code)-1])
+	if unicode.IsLetter(lastRune) {
+		return code[:len(code)-1]
+	}
+	return code
+}
+
