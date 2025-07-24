@@ -1,11 +1,13 @@
 package web
 
-import "github.com/jp-roisin/catch-and-go/cmd/web/ui/input"
-import "github.com/jp-roisin/catch-and-go/cmd/web/ui/label"
-import "github.com/jp-roisin/catch-and-go/cmd/web/ui/selectbox"
-import "github.com/jp-roisin/catch-and-go/cmd/web/ui/popover"
+import (
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/input"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/label"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/popover"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/selectbox"
+)
 
-templ Base() {
+templ Base(theme string) {
 	<!DOCTYPE html>
 	<html lang="en" class="h-screen light">
 		<head>
@@ -17,6 +19,7 @@ templ Base() {
 			<script src="assets/js/htmx.min.js"></script>
 			<script src="assets/js/templui.js"></script>
 			<script src="assets/js/theme.js"></script>
+			<script>jsThemeHandler({{ theme }})</script>
 			@input.Script()
 			@label.Script()
 			@selectbox.Script()
