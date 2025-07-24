@@ -6,6 +6,7 @@ import (
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
 	"github.com/jp-roisin/catch-and-go/cmd/web/ui/separator"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/skeleton"
 	"github.com/jp-roisin/catch-and-go/cmd/web/utils"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
 	"github.com/jp-roisin/catch-and-go/internal/externalapi"
@@ -32,11 +33,23 @@ templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
 					@icon.X()
 				}
 			}
-			@card.Content(card.ContentProps{
-				Attributes: templ.Attributes{
-					"hx-get":     fmt.Sprintf("/dashboards/%d", d.DashboardID),
-					"hx-trigger": "load",
-				}})
+			@card.Content() {
+				<div
+					hx-get={ fmt.Sprintf("/dashboards/%d", d.DashboardID) }
+					hx-trigger="load"
+					hx-swap="outerHTML"
+					hx-indicator="#content-skeleton"
+				></div>
+				<ul id="content-skeleton" class="htmx-indicator">
+					<li>
+						@skeleton.Skeleton(skeleton.Props{Class: "h-8 w-full my-4"})
+						@separator.Separator()
+					</li>
+					<li>
+						@skeleton.Skeleton(skeleton.Props{Class: "h-8 w-full my-4"})
+					</li>
+				</ul>
+			}
 		}
 	}
 }
