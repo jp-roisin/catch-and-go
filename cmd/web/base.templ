@@ -2,11 +2,10 @@ package web
 
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/input"
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/label"
-import "github.com/jp-roisin/catch-and-go/cmd/web/ui/popover"
 import "github.com/jp-roisin/catch-and-go/cmd/web/ui/selectbox"
-import "github.com/jp-roisin/catch-and-go/cmd/web/components"
+import "github.com/jp-roisin/catch-and-go/cmd/web/ui/popover"
 
-templ Base(locale string) {
+templ Base() {
 	<!DOCTYPE html>
 	<html lang="en" class="h-screen light">
 		<head>
@@ -23,7 +22,7 @@ templ Base(locale string) {
 			@popover.Script()
 		</head>
 		<body>
-      @components.Header(locale)
+			<header id="main" hx-get="/sessions" hx-trigger="load" hx-swap="outerHTML"></header>
 			<main id="main" hx-get="/main" hx-trigger="load" hx-swap="outerHTML"></main>
 		</body>
 	</html>

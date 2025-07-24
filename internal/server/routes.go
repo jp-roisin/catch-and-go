@@ -37,6 +37,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.GET("/main", s.MainHandler)
 	e.GET("/health", s.healthHandler)
 
+	e.GET("/sessions", s.GetSessionHandler)
 	e.PUT("/sessions/locale", s.UpdateLocaleHandler)
 
 	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
@@ -61,6 +62,20 @@ func (s *Server) HelloWorldHandler(c echo.Context) error {
 
 func (s *Server) healthHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, s.db.Health())
+}
+
+func (s *Server) GetSessionHandler(c echo.Context) error {
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	var sb strings.Builder
+	if err := components.Header(session).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the line pickers failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
 }
 
 func (s *Server) UpdateLocaleHandler(c echo.Context) error {
@@ -105,12 +120,7 @@ func (s *Server) MainHandler(c echo.Context) error {
 }
 
 func (s *Server) BaseWebHandler(c echo.Context) error {
-	session, ok := c.Get("session").(*store.Session)
-	if !ok {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
-	}
-
-	component := web.Base(session.Locale)
+	component := web.Base()
 	err := component.Render(c.Request().Context(), c.Response())
 	if err != nil {
 		log.Printf("Error rendering in BaseWebHandler: %v", err)

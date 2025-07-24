@@ -1,0 +1,37 @@
+package components
+
+import "github.com/jp-roisin/catch-and-go/cmd/web/ui/selectbox"
+
+templ LocaleSelect(locale string) {
+	<div>
+		@selectbox.SelectBox() {
+			@selectbox.Trigger(selectbox.TriggerProps{
+				Name: "locale",
+				Attributes: templ.Attributes{
+					"hx-put":     "/sessions/locale",
+					"hx-trigger": "change",
+					"hx-target":  "#main",
+					"hx-swap":    "outerHTML",
+				},
+			}) {
+				@selectbox.Value()
+			}
+			@selectbox.Content(selectbox.ContentProps{NoSearch: true}) {
+				@selectbox.Group() {
+					@selectbox.Item(selectbox.ItemProps{
+						Value:    "fr",
+						Selected: locale == "fr",
+					}) {
+						Français
+					}
+					@selectbox.Item(selectbox.ItemProps{
+						Value:    "nl",
+						Selected: locale == "nl",
+					}) {
+						Nederlands
+					}
+				}
+			}
+		}
+	</div>
+}
