@@ -151,7 +151,12 @@ func (s *Server) MainHandler(c echo.Context) error {
 }
 
 func (s *Server) BaseWebHandler(c echo.Context) error {
-	component := web.Base()
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	component := web.Base(session.Theme)
 	err := component.Render(c.Request().Context(), c.Response())
 	if err != nil {
 		log.Printf("Error rendering in BaseWebHandler: %v", err)
