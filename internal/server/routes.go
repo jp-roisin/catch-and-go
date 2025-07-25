@@ -44,7 +44,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
 	e.GET("/lines/picker", s.LinesPickerHandler)
-	e.GET("/stops/picker/:lineId", s.StopsPickerHandler)
+	e.GET("/directions/picker/:lineCode", s.DirectionsPickerHandler)
+	e.GET("/stops/picker/:lineId", s.StopsPickerHandler) // TOOD MAKE IT POST
 
 	e.GET("/dashboards", s.GetDashboardsHandler)
 	e.GET("/dashboards/:dashboardId", s.GetDashboardContentHandler)
@@ -214,6 +215,23 @@ func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
 	var sb strings.Builder
 	if err := components.EmptyState(session.Theme).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the empty state failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
+}
+
+func (s *Server) DirectionsPickerHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	lineCode := c.Param("lineCode")
+
+	lines, err := s.db.ListLinesByCode(ctx, lineCode)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the lines for that code")
+	}
+
+	var sb strings.Builder
+	if err := components.DirectionPicker(lines).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the direction picker failed")
 	}
 
 	return c.HTML(http.StatusOK, sb.String())

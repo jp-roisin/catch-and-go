@@ -1,0 +1,77 @@
+package components
+
+import (
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/button"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/card"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/icon"
+	"github.com/jp-roisin/catch-and-go/cmd/web/ui/radiocard"
+	"github.com/jp-roisin/catch-and-go/internal/database/store"
+	"strconv"
+)
+
+templ DirectionPicker(lines []store.Line) {
+	@card.Card(
+		card.Props{
+			ID:    "box",
+			Class: "aspect-video flex flex-col",
+		}) {
+		@card.Header(card.HeaderProps{Class: "pb-2"}) {
+			@card.Title() {
+				Select in which direction you're going
+			}
+			@card.Description() {
+				TOOD add description
+			}
+		}
+		@card.Content(card.ContentProps{Class: "flex-1 overflow-y-auto"}) {
+			<form
+				class="flex flex-col gap-4"
+				id="stop-form"
+				hx-post="/dashboards"
+				hx-target="#box"
+				hx-swap="outerHTML"
+			>
+				for i, line := range lines {
+					@radiocard.RadioCard(radiocard.Props{
+						ID:      strconv.FormatInt(int64(line.Direction), 10),
+						Name:    "stop_id",
+						Value:   strconv.FormatInt(int64(line.Direction), 10),
+						Checked: i == 0,
+					}) {
+						@radiocard.Header() {
+							<div class="flex items-center gap-2">
+								@icon.Navigation()
+								<span>{ line.Destination }</span>
+							</div>
+						}
+					}
+				}
+				<input type="hidden" id="line_id" name="line_id" value={ lines[0].ID }/>
+			</form>
+		}
+		@card.Footer(card.FooterProps{
+			Class: "flex justify-end pt-2",
+		}) {
+			<div class="flex gap-2">
+				@button.Button(button.Props{
+					Variant: button.VariantGhost,
+					Attributes: templ.Attributes{
+						"hx-post":    "/TODO",
+						"hx-target": "#box",
+						"hx-swap":   "outerHTML",
+					},
+				}) {
+					Cancel
+				}
+				@button.Button(button.Props{
+					Type: "submit",
+					Attributes: templ.Attributes{
+						"form": "stop-form",
+					},
+				}) {
+					Next
+				}
+			</div>
+		}
+	}
+}
