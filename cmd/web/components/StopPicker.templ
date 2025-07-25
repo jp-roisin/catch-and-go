@@ -49,7 +49,7 @@ templ StopPicker(stops []store.Stop) {
 						Disabled: stop.ID == 1,
 						Checked:  i == getDefaultSelection(stops),
 					}) {
-						@radiocard.Header() {
+						@radiocard.Description() {
 							<div class="flex items-center gap-2">
 								if stop.ID == 1 {
 									@icon.TriangleAlert()

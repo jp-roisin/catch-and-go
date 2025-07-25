@@ -38,7 +38,7 @@ templ DirectionPicker(lines []store.Line) {
 						Value:   strconv.FormatInt(int64(line.ID), 10),
 						Checked: i == 0,
 					}) {
-						@radiocard.Header() {
+						@radiocard.Description() {
 							<div class="flex items-center gap-2">
 								@icon.Navigation()
 								<span>{ line.Destination }</span>
