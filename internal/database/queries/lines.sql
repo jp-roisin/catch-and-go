@@ -10,3 +10,7 @@ ORDER BY code ASC;
 SELECT * FROM lines
 WHERE direction = ?
 ORDER BY code ASC;
+
+-- name: ListLinesByCode :many
+SELECT * FROM lines
+WHERE CODE = ?;

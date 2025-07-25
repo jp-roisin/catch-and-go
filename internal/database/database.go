@@ -33,6 +33,7 @@ type Service interface {
 	GetLine(ctx context.Context, param store.GetLineParams) (store.Line, error)
 	ListLines(ctx context.Context) ([]store.Line, error)
 	ListLinesByDirection(ctx context.Context, direction int) ([]store.Line, error)
+	ListLinesByCode(ctx context.Context, code string) ([]store.Line, error)
 
 	GetStop(ctx context.Context, code string) (store.Stop, error)
 
@@ -150,8 +151,13 @@ func (s *service) GetLine(ctx context.Context, param store.GetLineParams) (store
 func (s *service) ListLines(ctx context.Context) ([]store.Line, error) {
 	return s.queries.ListLines(ctx)
 }
+
 func (s *service) ListLinesByDirection(ctx context.Context, direction int) ([]store.Line, error) {
 	return s.queries.ListLinesByDirection(ctx, int64(direction))
+}
+
+func (s *service) ListLinesByCode(ctx context.Context, code string) ([]store.Line, error) {
+	return s.queries.ListLinesByCode(ctx, code)
 }
 
 func (s *service) GetStop(ctx context.Context, code string) (store.Stop, error) {

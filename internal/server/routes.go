@@ -44,7 +44,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
 	e.GET("/lines/picker", s.LinesPickerHandler)
-	e.GET("/stops/picker/:lineId", s.StopsPickerHandler)
+	e.GET("/directions/picker/:lineCode", s.DirectionsPickerHandler)
+	e.POST("/stops/picker", s.StopsPickerHandler)
 
 	e.GET("/dashboards", s.GetDashboardsHandler)
 	e.GET("/dashboards/:dashboardId", s.GetDashboardContentHandler)
@@ -178,6 +179,25 @@ func (s *Server) LinesPickerHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the lines info")
 	}
 
+	// Even though the DB query orders the results by the 'code' column in ASC order,
+	// we need to sort them again here manually because 'code' column is a string.
+	// As a result, "11" would come before "2" (string comparison), which is incorrect for numeric ordering.
+	//
+	// We keep 'code' as a string for now because we might allow special or momentary line codes later,
+	// like "T92", which wouldn't work with a numeric column.
+	sort.Slice(linesWithFallback, func(i, j int) bool {
+		i, err = strconv.Atoi(linesWithFallback[i].Code)
+		if err != nil {
+			return false
+		}
+		j, err = strconv.Atoi(linesWithFallback[j].Code)
+		if err != nil {
+			return false
+		}
+
+		return i < j
+	})
+
 	var sb strings.Builder
 	if err := components.LinePicker(linesWithFallback).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the line pickers failed")
@@ -200,9 +220,41 @@ func (s *Server) LinesEmptyStateHandler(c echo.Context) error {
 	return c.HTML(http.StatusOK, sb.String())
 }
 
+func (s *Server) DirectionsPickerHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+	lineCode := c.Param("lineCode")
+
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
+	lines, err := s.db.ListLinesByCode(ctx, lineCode)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the lines for that code")
+	}
+
+	var props []store.Line
+	for _, l := range lines {
+		translatedLine, err := l.Translate(session.Locale)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Something is wrong about this line info: %v", l.Code))
+		}
+		props = append(props, translatedLine)
+	}
+
+	var sb strings.Builder
+	if err := components.DirectionPicker(props).Render(c.Request().Context(), &sb); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the direction picker failed")
+	}
+
+	return c.HTML(http.StatusOK, sb.String())
+}
+
 func (s *Server) StopsPickerHandler(c echo.Context) error {
 	ctx := c.Request().Context()
-	lineID := c.Param("lineId")
+	lineID := c.FormValue("line_id")
+
 	id, err := strconv.Atoi(lineID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid lineId: %q is not a number", lineID))

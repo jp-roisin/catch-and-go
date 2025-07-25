@@ -9,17 +9,7 @@ import (
 	"strconv"
 )
 
-func getDefaultSelection(stops []store.Stop) int {
-	for i, s := range stops {
-		if s.ID != 1 {
-			return i
-		}
-	}
-
-	return 0 // TODO: validate stop.ID in the handler
-}
-
-templ StopPicker(stops []store.Stop) {
+templ DirectionPicker(lines []store.Line) {
 	@card.Card(
 		card.Props{
 			ID:    "box",
@@ -27,36 +17,31 @@ templ StopPicker(stops []store.Stop) {
 		}) {
 		@card.Header(card.HeaderProps{Class: "pb-2"}) {
 			@card.Title() {
-				Add a Stop to Your Dashboard
+				Heading Which Way?
 			}
 			@card.Description() {
-				Pick any bus, tram, or metro stop to track live arrival times.
+				Choose between the two endpoints of the line to see stops going that way.
 			}
 		}
 		@card.Content(card.ContentProps{Class: "flex-1 overflow-y-auto"}) {
 			<form
-				class="grid grid-cols-2 gap-2"
-				id="stop-form"
-				hx-post="/dashboards"
-				hx-target="#main"
+				class="flex flex-col gap-4"
+				id="direction-form"
+				hx-post="/stops/picker"
+				hx-target="#box"
 				hx-swap="outerHTML"
 			>
-				for i, stop := range stops {
+				for i, line := range lines {
 					@radiocard.RadioCard(radiocard.Props{
-						ID:       strconv.FormatInt(int64(stop.ID), 10),
-						Name:     "stop_id",
-						Value:    strconv.FormatInt(int64(stop.ID), 10),
-						Disabled: stop.ID == 1,
-						Checked:  i == getDefaultSelection(stops),
+						ID:      strconv.FormatInt(int64(line.ID), 10),
+						Name:    "line_id",
+						Value:   strconv.FormatInt(int64(line.ID), 10),
+						Checked: i == 0,
 					}) {
 						@radiocard.Description() {
 							<div class="flex items-center gap-2">
-								if stop.ID == 1 {
-									@icon.TriangleAlert()
-								} else {
-									@icon.GitCommitVertical()
-								}
-								<span>{ stop.Name }</span>
+								@icon.Navigation()
+								<span>{ line.Destination }</span>
 							</div>
 						}
 					}
@@ -80,10 +65,10 @@ templ StopPicker(stops []store.Stop) {
 				@button.Button(button.Props{
 					Type: "submit",
 					Attributes: templ.Attributes{
-						"form": "stop-form",
+						"form": "direction-form",
 					},
 				}) {
-					Save
+					Next
 				}
 			</div>
 		}
