@@ -224,13 +224,27 @@ func (s *Server) DirectionsPickerHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 	lineCode := c.Param("lineCode")
 
+	session, ok := c.Get("session").(*store.Session)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the session token")
+	}
+
 	lines, err := s.db.ListLinesByCode(ctx, lineCode)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Couldn't retreive the lines for that code")
 	}
 
+	var props []store.Line
+	for _, l := range lines {
+		translatedLine, err := l.Translate(session.Locale)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Something is wrong about this line info: %v", l.Code))
+		}
+		props = append(props, translatedLine)
+	}
+
 	var sb strings.Builder
-	if err := components.DirectionPicker(lines).Render(c.Request().Context(), &sb); err != nil {
+	if err := components.DirectionPicker(props).Render(c.Request().Context(), &sb); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Rendering of the direction picker failed")
 	}
 
