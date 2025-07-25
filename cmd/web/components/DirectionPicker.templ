@@ -17,25 +17,25 @@ templ DirectionPicker(lines []store.Line) {
 		}) {
 		@card.Header(card.HeaderProps{Class: "pb-2"}) {
 			@card.Title() {
-				Select in which direction you're going
+				Heading Which Way?
 			}
 			@card.Description() {
-				TOOD add description
+				Choose between the two endpoints of the line to see stops going that way.
 			}
 		}
 		@card.Content(card.ContentProps{Class: "flex-1 overflow-y-auto"}) {
 			<form
 				class="flex flex-col gap-4"
-				id="stop-form"
-				hx-post="/dashboards"
+				id="direction-form"
+				hx-post="/stops/picker"
 				hx-target="#box"
 				hx-swap="outerHTML"
 			>
 				for i, line := range lines {
 					@radiocard.RadioCard(radiocard.Props{
-						ID:      strconv.FormatInt(int64(line.Direction), 10),
-						Name:    "stop_id",
-						Value:   strconv.FormatInt(int64(line.Direction), 10),
+						ID:      strconv.FormatInt(int64(line.ID), 10),
+						Name:    "line_id",
+						Value:   strconv.FormatInt(int64(line.ID), 10),
 						Checked: i == 0,
 					}) {
 						@radiocard.Header() {
@@ -46,7 +46,6 @@ templ DirectionPicker(lines []store.Line) {
 						}
 					}
 				}
-				<input type="hidden" id="line_id" name="line_id" value={ lines[0].ID }/>
 			</form>
 		}
 		@card.Footer(card.FooterProps{
@@ -56,7 +55,7 @@ templ DirectionPicker(lines []store.Line) {
 				@button.Button(button.Props{
 					Variant: button.VariantGhost,
 					Attributes: templ.Attributes{
-						"hx-post":    "/TODO",
+						"hx-get":    "/lines/empty_state",
 						"hx-target": "#box",
 						"hx-swap":   "outerHTML",
 					},
@@ -66,7 +65,7 @@ templ DirectionPicker(lines []store.Line) {
 				@button.Button(button.Props{
 					Type: "submit",
 					Attributes: templ.Attributes{
-						"form": "stop-form",
+						"form": "direction-form",
 					},
 				}) {
 					Next

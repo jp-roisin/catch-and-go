@@ -45,7 +45,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	e.GET("/lines/empty_state", s.LinesEmptyStateHandler)
 	e.GET("/lines/picker", s.LinesPickerHandler)
 	e.GET("/directions/picker/:lineCode", s.DirectionsPickerHandler)
-	e.GET("/stops/picker/:lineId", s.StopsPickerHandler) // TOOD MAKE IT POST
+	e.POST("/stops/picker", s.StopsPickerHandler)
 
 	e.GET("/dashboards", s.GetDashboardsHandler)
 	e.GET("/dashboards/:dashboardId", s.GetDashboardContentHandler)
@@ -239,7 +239,8 @@ func (s *Server) DirectionsPickerHandler(c echo.Context) error {
 
 func (s *Server) StopsPickerHandler(c echo.Context) error {
 	ctx := c.Request().Context()
-	lineID := c.Param("lineId")
+	lineID := c.FormValue("line_id")
+
 	id, err := strconv.Atoi(lineID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid lineId: %q is not a number", lineID))
