@@ -47,6 +47,15 @@ const baseUrl = "https://data.stib-mivb.brussels/api/explore/v2.1/catalog/datase
 
 func GetWaitingTimeForStop(stopCode string) (Response, error) {
 	var result Response
+
+	if cacheValue, ok := GetFromCache(stopCode); ok {
+		if err := json.Unmarshal(cacheValue, &result); err != nil {
+			return result, fmt.Errorf("json decode failed: %w", err)
+		}
+
+		return result, nil
+	}
+
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s?where=pointid=%s", baseUrl, stopCode), nil)
 	if err != nil {
 		return result, err
@@ -66,8 +75,16 @@ func GetWaitingTimeForStop(stopCode string) (Response, error) {
 		return result, fmt.Errorf("server error: %s", string(body))
 	}
 
-	decoder := json.NewDecoder(res.Body)
-	if err := decoder.Decode(&result); err != nil {
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return result, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if res.StatusCode == 200 {
+		SetCache(stopCode, []byte(body))
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
 		return result, fmt.Errorf("json decode failed: %w", err)
 	}
 
