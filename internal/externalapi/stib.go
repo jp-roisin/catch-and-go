@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -82,7 +81,7 @@ func GetWaitingTimeForStop(stopCode string) (Response, error) {
 	}
 
 	if res.StatusCode == 200 {
-		SetCache(stopCode, []byte(body), time.Minute)
+		SetCache(stopCode, []byte(body))
 	}
 
 	if err := json.Unmarshal(body, &result); err != nil {

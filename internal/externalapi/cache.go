@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const cacheTTL time.Duration = 1 * time.Minute
+
 type CacheEntry struct {
 	Data      []byte
 	ExpiresAt time.Time
@@ -25,10 +27,10 @@ func GetFromCache(key string) ([]byte, bool) {
 	return entry.Data, true
 }
 
-func SetCache(key string, data []byte, ttl time.Duration) {
+func SetCache(key string, data []byte) {
 	cache.Store(key, CacheEntry{
 		Data:      data,
-		ExpiresAt: time.Now().Add(ttl),
+		ExpiresAt: time.Now().Add(cacheTTL),
 	})
 }
 
