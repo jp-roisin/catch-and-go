@@ -10,6 +10,7 @@ import (
 type PassingTime struct {
 	LineCode            string
 	Color               sql.NullString
+	TextColor           string
 	Mode                sql.NullString
 	Destination         externalapi.I18n
 	ExpectedArrivalTime int
@@ -28,8 +29,8 @@ templ DashboardContent(props DashboardContentProps) {
 					<div class="flex gap-4 items-center">
 						@LineMode(pt.Mode)
 						<span
-							class="text-white size-[32px] rounded grid place-items-center font-semibold"
-							style={ fmt.Sprintf("background-color:%s", pt.Color.String) }
+							class="size-[32px] rounded grid place-items-center font-semibold"
+							style={ fmt.Sprintf("background-color:%s; color:%s", pt.Color.String, pt.TextColor) }
 						>
 							{ pt.LineCode }
 						</span>
