@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/jp-roisin/catch-and-go/internal/database"
 	"github.com/jp-roisin/catch-and-go/internal/database/store"
@@ -45,8 +46,10 @@ func SeedStopsByLines(ctx context.Context, db *sql.DB, service database.Service)
 		code := row[2]      // lineCode
 		lineStops := row[3] // stopCode
 
-		// Filtering lineIds (like "N12") that have not been inserted in `lines`
-		if !validInteger.MatchString(code) {
+		// Filtering out lineIds (like "N12" which is the Noctis / night shift for the line)
+		// that have not been inserted in `lines`
+		codeInt, err := strconv.Atoi(removeTrailingLetter(code))
+		if err != nil {
 			continue
 		}
 
@@ -56,7 +59,7 @@ func SeedStopsByLines(ctx context.Context, db *sql.DB, service database.Service)
 		}
 
 		line, err := service.GetLine(ctx, store.GetLineParams{
-			Code:      code,
+			Code:      strconv.FormatInt(int64(codeInt), 10),
 			Direction: int64(directionToBoolean(direction)),
 		})
 		if err != nil {
@@ -64,7 +67,12 @@ func SeedStopsByLines(ctx context.Context, db *sql.DB, service database.Service)
 		}
 
 		for _, st := range ls {
-			stop, err := service.GetStop(ctx, removeTrailingLetter(st.Code))
+			var stop store.Stop
+			sanitazedStopId, err := strconv.Atoi(removeTrailingLetter(st.Code))
+			if err != nil {
+				stop.ID = 1 // Fallback to the first row inserted in `stops` (see getUnknownStop())
+			}
+			stop, err = service.GetStop(ctx, strconv.FormatInt(int64(sanitazedStopId), 10))
 			if err != nil {
 				stop.ID = 1 // Fallback to the first row inserted in `stops` (see getUnknownStop())
 			}
