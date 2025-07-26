@@ -22,6 +22,7 @@ type LineWithFallback struct {
 	Direction   int
 	Mode        string
 	Color       string
+	TextColor   string
 }
 
 func (l *Line) AddFallback() LineWithFallback {
@@ -46,6 +47,7 @@ func (l *Line) AddFallback() LineWithFallback {
 		Direction:   int(l.Direction),
 		Mode:        mode,
 		Color:       color,
+		TextColor:   l.TextColor,
 	}
 }
 

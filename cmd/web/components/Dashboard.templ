@@ -17,9 +17,12 @@ templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
 			Class: "aspect-video flex flex-col",
 		}) {
 			@card.Header(card.HeaderProps{Class: "flex flex-row items-center justify-between"}) {
+        <span class="flex gap-2 items-center">
+        @icon.MapPin()
 				@card.Title() {
 					{ d.StopName }
 				}
+        </span>
 				@button.Button(button.Props{Variant: button.VariantGhost,
 					Attributes: templ.Attributes{
 						"hx-delete":  fmt.Sprintf("/dashboards/%d", d.DashboardID),

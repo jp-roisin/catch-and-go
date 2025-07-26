@@ -3,8 +3,8 @@ package components
 import "database/sql"
 
 templ LineMode(mode sql.NullString) {
-	if mode.Valid {
-		<span class="bg-[#d44339] size-[32px] rounded-full text-white flex justify-center items-center">
+	<span class="bg-[#d44339] size-[32px] rounded-full text-white flex justify-center items-center">
+		if mode.Valid {
 			switch mode.String {
 				case "tram":
 					T
@@ -13,8 +13,10 @@ templ LineMode(mode sql.NullString) {
 				case "metro":
 					M
 				default:
-					""
+					?
 			}
-		</span>
-	}
+		} else {
+			B
+		}
+	</span>
 }

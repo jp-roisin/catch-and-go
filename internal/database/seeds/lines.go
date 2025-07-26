@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+
+	"github.com/jp-roisin/catch-and-go/internal/database"
 )
 
 const stopsByLineFilePath = "internal/database/seeds/data/stops-by-line-production.csv"
@@ -153,6 +155,74 @@ func SeedLinesMetadatas(ctx context.Context, db *sql.DB) error {
 		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to insert row %d: %v", i+1, err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+const textColorsFilesPath = "internal/database/seeds/data/lines_text_colors.csv"
+
+// The STIB API does not provide text color information for the lines.
+// We created this CSV file manually based on the styles shown on:
+// https://www.stib-mivb.be/home
+//
+// Each line uses one of only two text colors: `#ffffff` (white) or `#000000` (black),
+// depending on the background color for optimal contrast.
+//
+// CSV Format:
+// LIGNE;COLOR_HEX
+// 1;#ffffff
+// 2;#000000
+func SeedLinesTextColors(ctx context.Context, db *sql.DB, service database.Service) error {
+	textColorsResult, err := readCsvFile(textColorsFilesPath)
+	if err != nil {
+		return err
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.PrepareContext(ctx, `
+			UPDATE lines
+			SET text_color = ?
+			WHERE id = ?;
+	`)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer stmt.Close()
+
+	for i, tc := range textColorsResult {
+		lineCode := tc[0]
+		lineTextColor := tc[1]
+		if i == 0 {
+			continue // skip csv header
+		}
+		if lineTextColor != "#000000" {
+			continue // white is the DB's default value
+		}
+
+		// should return 2 result (two directions per line)
+		lines, err := service.ListLinesByCode(ctx, lineCode)
+		if err != nil {
+			fmt.Printf("Couldn't find lines with code = %d\n", lineCode)
+			continue
+		}
+
+		for _, l := range lines {
+			_, err = stmt.ExecContext(ctx, lineTextColor, l.ID)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("failed to insert row %d: %v", i+1, err)
+			}
 		}
 	}
 

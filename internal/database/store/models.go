@@ -30,6 +30,7 @@ type Line struct {
 	CreatedAt   sql.NullTime
 	Mode        sql.NullString
 	Color       sql.NullString
+	TextColor   string
 }
 
 type Session struct {

@@ -22,7 +22,7 @@ CREATE TABLE lines (
   destination TEXT NOT NULL,
   direction INT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-, mode TEXT, color TEXT);
+, mode TEXT, color TEXT, text_color TEXT NOT NULL DEFAULT '#ffffff');
 CREATE TABLE stops_by_lines (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   stop_id INTEGER NOT NULL,

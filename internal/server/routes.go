@@ -411,6 +411,7 @@ func (s *Server) GetDashboardContentHandler(c echo.Context) error {
 				LineCode:            line.Code,
 				Mode:                line.Mode,
 				Color:               line.Color,
+				TextColor:           line.TextColor,
 				Destination:         pt.Destination,
 				ExpectedArrivalTime: externalapi.MinutesFromNow(pt.ExpectedArrivalTime),
 			})
