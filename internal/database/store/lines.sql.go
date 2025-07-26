@@ -10,7 +10,7 @@ import (
 )
 
 const getLine = `-- name: GetLine :one
-SELECT id, code, destination, direction, created_at, mode, color FROM lines
+SELECT id, code, destination, direction, created_at, mode, color, text_color FROM lines
 WHERE code = ? AND direction = ? LIMIT 1
 `
 
@@ -30,12 +30,13 @@ func (q *Queries) GetLine(ctx context.Context, arg GetLineParams) (Line, error) 
 		&i.CreatedAt,
 		&i.Mode,
 		&i.Color,
+		&i.TextColor,
 	)
 	return i, err
 }
 
 const listLines = `-- name: ListLines :many
-SELECT id, code, destination, direction, created_at, mode, color FROM lines
+SELECT id, code, destination, direction, created_at, mode, color, text_color FROM lines
 ORDER BY code ASC
 `
 
@@ -56,6 +57,7 @@ func (q *Queries) ListLines(ctx context.Context) ([]Line, error) {
 			&i.CreatedAt,
 			&i.Mode,
 			&i.Color,
+			&i.TextColor,
 		); err != nil {
 			return nil, err
 		}
@@ -71,7 +73,7 @@ func (q *Queries) ListLines(ctx context.Context) ([]Line, error) {
 }
 
 const listLinesByCode = `-- name: ListLinesByCode :many
-SELECT id, code, destination, direction, created_at, mode, color FROM lines
+SELECT id, code, destination, direction, created_at, mode, color, text_color FROM lines
 WHERE CODE = ?
 `
 
@@ -92,6 +94,7 @@ func (q *Queries) ListLinesByCode(ctx context.Context, code string) ([]Line, err
 			&i.CreatedAt,
 			&i.Mode,
 			&i.Color,
+			&i.TextColor,
 		); err != nil {
 			return nil, err
 		}
@@ -107,7 +110,7 @@ func (q *Queries) ListLinesByCode(ctx context.Context, code string) ([]Line, err
 }
 
 const listLinesByDirection = `-- name: ListLinesByDirection :many
-SELECT id, code, destination, direction, created_at, mode, color FROM lines
+SELECT id, code, destination, direction, created_at, mode, color, text_color FROM lines
 WHERE direction = ?
 ORDER BY code ASC
 `
@@ -129,6 +132,7 @@ func (q *Queries) ListLinesByDirection(ctx context.Context, direction int64) ([]
 			&i.CreatedAt,
 			&i.Mode,
 			&i.Color,
+			&i.TextColor,
 		); err != nil {
 			return nil, err
 		}

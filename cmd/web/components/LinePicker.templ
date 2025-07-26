@@ -29,8 +29,8 @@ templ LinePicker(lines []store.LineWithFallback) {
 							hx-get={ fmt.Sprintf("/directions/picker/%s", line.Code) }
 							hx-target="#box"
 							hx-swap="outerHTML"
-							class="text-white size-[40px] rounded grid place-items-center cursor-pointer font-semibold"
-							style={ fmt.Sprintf("background-color:%s", line.Color) }
+							class="size-[40px] rounded grid place-items-center cursor-pointer font-semibold"
+							style={ fmt.Sprintf("background-color:%s;color:%s", line.Color, line.TextColor) }
 						>
 							{ line.Code }
 						</button>
