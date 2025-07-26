@@ -43,5 +43,10 @@ func main() {
 	}
 	log.Println("✅ Stops by Lines seeding successful")
 
+	if err := seeds.SeedLinesTextColors(ctx, db, service); err != nil {
+		log.Fatalf("❌ Lines text colors seeding failed:\n %v", err)
+	}
+	log.Println("✅ Lines text colors seeding successful")
+
 	log.Println("✅ Seeding complete")
 }
