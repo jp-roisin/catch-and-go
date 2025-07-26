@@ -30,7 +30,16 @@ templ DashboardContent(props DashboardContentProps) {
 						@LineMode(pt.Mode)
 						<span
 							class="size-[32px] rounded grid place-items-center font-semibold"
-							style={ fmt.Sprintf("background-color:%s; color:%s", pt.Color.String, pt.TextColor) }
+							style={ fmt.Sprintf(
+                "background-color:%s; color:%s",
+                func() string {
+                  if pt.Color.Valid {
+                    return pt.Color.String
+                  }
+                  return "#ccc"
+                }(),
+                pt.TextColor,
+              ) }
 						>
 							{ pt.LineCode }
 						</span>
