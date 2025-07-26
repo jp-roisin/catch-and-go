@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/jp-roisin/catch-and-go/internal/database"
-	"github.com/jp-roisin/catch-and-go/internal/database/store"
 )
 
 const stopsByLineFilePath = "internal/database/seeds/data/stops-by-line-production.csv"
@@ -211,19 +210,19 @@ func SeedLinesTextColors(ctx context.Context, db *sql.DB, service database.Servi
 			continue // white is the DB's default value
 		}
 
-		line, err := service.GetLine(ctx, store.GetLineParams{
-			Code:      lineCode,
-			Direction: 0,
-		})
+		// should return 2 result (two directions per line)
+		lines, err := service.ListLinesByCode(ctx, lineCode)
 		if err != nil {
-			fmt.Printf("Couldn't find %d in the DB!\n", line.ID)
+			fmt.Printf("Couldn't find lines with code = %d\n", lineCode)
 			continue
 		}
 
-		_, err = stmt.ExecContext(ctx, lineTextColor, line.ID)
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to insert row %d: %v", i+1, err)
+		for _, l := range lines {
+			_, err = stmt.ExecContext(ctx, lineTextColor, l.ID)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("failed to insert row %d: %v", i+1, err)
+			}
 		}
 	}
 
