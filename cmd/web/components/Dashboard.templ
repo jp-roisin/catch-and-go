@@ -31,13 +31,14 @@ templ Dashboard(dashbords []store.ListDashboardsFromSessionRow) {
 					@icon.X()
 				}
 			}
-			@card.Content(card.ContentProps{Class: "flex-1 overflow-y-auto"}) {
-				<div
-					hx-get={ fmt.Sprintf("/dashboards/%d", d.DashboardID) }
-					hx-trigger="load"
-					hx-swap="outerHTML"
-					hx-indicator="#content-skeleton"
-				></div>
+			@card.Content(card.ContentProps{
+				Class: "flex-1 overflow-y-auto",
+				Attributes: templ.Attributes{
+					"hx-get":       fmt.Sprintf("/dashboards/%d", d.DashboardID),
+					"hx-trigger":   "load, every 60s",
+					"hx-swap":      "innerHTML",
+					"hx-indicator": "#content-skeleton",
+				}}) {
 				@DashboarContentSkeleton(4)
 			}
 		}
