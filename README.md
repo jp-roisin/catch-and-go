@@ -1,16 +1,44 @@
 # Project github.com/jp-roisin/catch-and-go
 
-One Paragraph of project description goes here
+## catch-and-go
 
-## Getting Started
+I built **Catch and Go** initially as a way to **learn Golang**, and then I wanted to have a frontend to interact with the data. Since I mostly work with React recently, I decided to try something different and use **htmx** to keep the frontend simple while still leveraging Go for rendering.  
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+The project allows users to **add bus, tram, or metro stops** to their personal dashboard, giving a single view of the multiple ways they can commute around their area.
+
+### Features
+
+- Available in **French** and **Dutch**
+- Supports **dark and light mode**
+- Quick and interactive with **htmx**
+- Easy to extend and run locally
+- Personalized dashboard for multiple stops
+
+### Screenshot
+
+![Dashboard screenshot](./docs/screenshot.png)
+
+## Tech Stack
+
+- **STIB API** - the STIB / MIVB open api
+- **SQLite** — lightweight database
+- **Go Blueprint** — project scaffolding
+- **Goose** — migration manager
+- **sqlc** — type-safe SQL to Go code
+- **Golang + Echo** — backend framework
+- **HTMX + Templ** — frontend rendering and interactivity
+- **Tailwind + TemplUI** — styling and component library
 
 ## MakeFile
 
 Run build make command with tests
 ```bash
 make all
+```
+
+Seed the application
+```bash
+make seed
 ```
 
 Build the application
