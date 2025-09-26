@@ -1,5 +1,3 @@
-# Project github.com/jp-roisin/catch-and-go
-
 ## catch-and-go
 
 I built **Catch and Go** initially as a way to **learn Golang**, and then I wanted to have a frontend to interact with the data. Since I mostly work with React recently, I decided to try something different and use **htmx** to keep the frontend simple while still leveraging Go for rendering.  
